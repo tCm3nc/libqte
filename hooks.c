@@ -16,19 +16,20 @@ void free(void* ptr) {
   return;
 }
 
-void* calloc(size_t nmemb, size_t size) {
-  void* p = __libqte_calloc(nmemb, size);
-  LOG("calloc(%zu, %zu) = %p", nmemb, size, p);
-  return p;
-}
+// void* calloc(size_t nmemb, size_t size) {
+//   void* p = __libqte_calloc(nmemb, size);
+//   LOG("calloc(%zu, %zu) = %p", nmemb, size, p);
+//   return p;
+// }
 
-void* realloc(void* ptr, size_t size) {
-  void* p = __libqte_realloc(ptr, size);
-  LOG("realloc(%p, %zu) = %p", ptr, size, p);
-  return p;
-}
+// void* realloc(void* ptr, size_t size) {
+//   void* p = __libqte_realloc(ptr, size);
+//   LOG("realloc(%p, %zu) = %p", ptr, size, p);
+//   return p;
+// }
 
 int posix_memalign(void** ptr, size_t alignment, size_t size) {
+  LOG("posix_memalign_before(%p, %zu, %zu)", ptr, alignment, size);
   int v = __libqte_posix_memalign(ptr, alignment, size);
   LOG("posix_memalign(%p, %zu, %zu) = %d", ptr, alignment, size, v);
   return v;
@@ -37,5 +38,11 @@ int posix_memalign(void** ptr, size_t alignment, size_t size) {
 void* memalign(size_t alignment, size_t size) {
   void* p = __libqte_memalign(alignment, size);
   LOG("memalign(%zu, %zu) = %p", alignment, size, p);
+  return p;
+}
+
+void* aligned_alloc(size_t alignment, size_t size) {
+  void* p = __libqte_aligned_alloc(alignment, size);
+  LOG("aligned_alloc(%zu, %zu) = %p", alignment, size, p);
   return p;
 }
