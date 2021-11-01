@@ -14,6 +14,12 @@ Compiling this library should be as simple as running `make`.
 The dependencies are on having a reasonable version of `clang` installed.
 See the `Makefile` for more details.
 
+If you wish for debugging logs to trace your execution, please compile as:
+
+```bash
+make debug
+```
+
 ## Testing
 
 Tests are contained inside the `tests` directory to test simple pieces of 
