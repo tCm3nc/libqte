@@ -16,17 +16,18 @@ void free(void* ptr) {
   return;
 }
 
-// void* calloc(size_t nmemb, size_t size) {
-//   void* p = __libqte_calloc(nmemb, size);
-//   LOG("calloc(%zu, %zu) = %p", nmemb, size, p);
-//   return p;
-// }
+void* calloc(size_t nmemb, size_t size) {
+  LOG("calling calloc with %zu, %zu", nmemb, size);
+  void* p = __libqte_calloc(nmemb, size);
+  LOG("calloc(%zu, %zu) = %p", nmemb, size, p);
+  return p;
+}
 
-// void* realloc(void* ptr, size_t size) {
-//   void* p = __libqte_realloc(ptr, size);
-//   LOG("realloc(%p, %zu) = %p", ptr, size, p);
-//   return p;
-// }
+void* realloc(void* ptr, size_t size) {
+  void* p = __libqte_realloc(ptr, size);
+  LOG("realloc(%p, %zu) = %p", ptr, size, p);
+  return p;
+}
 
 int posix_memalign(void** ptr, size_t alignment, size_t size) {
   LOG("posix_memalign_before(%p, %zu, %zu)", ptr, alignment, size);
