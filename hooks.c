@@ -1,4 +1,4 @@
-#include "libqte.h"
+#include "include/libqte.h"
 
 void __libqte_init_hooks(void) {
   __libqte_init_malloc();

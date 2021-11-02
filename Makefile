@@ -3,7 +3,7 @@ CFLAGS += -Wno-int-to-void-pointer-cast -ggdb
 LDFLAGS += -ldl -pthread
 
 FILES = libqte.c hooks.c malloc.c
-HEADERS = libqte.h
+HEADERS = include/libqte.h
 
 all: $(HEADERS) $(FILES)
 	$(CC) $(CFLAGS) -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)

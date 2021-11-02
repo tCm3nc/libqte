@@ -1,4 +1,4 @@
-#include "libqte.h"
+#include "include/libqte.h"
 
 void _libqte_init() {
   // initialise hooks

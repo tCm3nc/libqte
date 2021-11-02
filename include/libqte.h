@@ -31,6 +31,8 @@
   } while (0)
 #endif
 
+#define QTE_GRANULE_SIZE 16
+
 void __libqte_init_hooks(void);
 void __libqte_init_malloc(void);
 
