@@ -3,11 +3,11 @@ CC = clang
 CFLAGS += -Wno-int-to-void-pointer-cast -ggdb -DDEBUG
 LDFLAGS += -ldl -pthread
 
-FILES = double_free.c test_memalign.c
-HEADERS = ../
+FILES = test_double_free.c test_memalign.c test_malloc.c
+HEADERS =../include/libqte.h
 
 all: $(HEADERS) $(FILES)
-	$(foreach var, $(FILES), $(CC) $(CFLAGS) -fPIC $(var) -I$(HEADERS) ../libqte.so -o $(var:.c=) $(LDFLAGS);)
+	$(foreach var, $(FILES), $(CC) $(CFLAGS) -fPIC $(var) ../libqte.so -o $(var:.c=) $(LDFLAGS);)
 clean: $(FILES)
 	rm $(FILES:.c=)
 
