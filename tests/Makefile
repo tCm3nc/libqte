@@ -7,7 +7,7 @@ FILES = double_free.c test_memalign.c
 HEADERS = ../
 
 all: $(HEADERS) $(FILES)
-	$(foreach var, $(FILES), $(CC) $(CFLAGS) -fPIC $(var) -I$(HEADERS) -o $(var:.c=) $(LDFLAGS);)
+	$(foreach var, $(FILES), $(CC) $(CFLAGS) -fPIC $(var) -I$(HEADERS) ../libqte.so -o $(var:.c=) $(LDFLAGS);)
 clean: $(FILES)
 	rm $(FILES:.c=)
 
