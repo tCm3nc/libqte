@@ -1,14 +1,31 @@
 #define _GNU_SOURCE
-#include <stdint.h>  // for `uintptr_t` type
+#include <pthread.h>   // for pthread_spinlock_t
+#include <stdalign.h>  // for alignof
+#include <stddef.h>    // for max_align_t
+#include <stdint.h>    // for `uintptr_t` type
 #include "libqte.h"
 
-// Malloc interceptor
+// A collection of functions that manage the internal malloc hooks.
+
 bool __libqte_malloc_initialised;
 
 // function prototype of the original malloc and free implementation for GLIBC
 void* (*__orig_libc_malloc)(size_t);
 void (*__orig_libc_free)(void*);
 int (*__orig_libc_posix_memalign)(void*, size_t, size_t);
+
+static size_t alloc_align = alignof(max_align_t);
+
+#ifdef __GLIBC__
+// Since symbols are solved lazily at runtime through dl's `dl_runtime_resolve`
+// that requires heap allocations, if we intercept `calloc`, this results in a
+// infinite recursive loop.
+// The solution is to have a temporary allocation zone, which will be used for
+// local allocations until dl is able to resolve the symbol.
+#define ALLOC_ZONE_SIZE 4096
+static size_t __alloc_zone_idx;
+static unsigned char __alloc_zone[ALLOC_ZONE_SIZE];
+#endif
 
 void __libqte_init_malloc(void) {
   if (__libqte_malloc_initialised)
@@ -25,6 +42,16 @@ void __libqte_init_malloc(void) {
 void* __libqte_malloc(size_t size) {
   if (!__libqte_malloc_initialised) {
     __libqte_init_malloc();
+    // Use the temporary allocation zone to allocate some memory for now.
+    void* t = &__alloc_zone[__alloc_zone_idx];
+    if (size & (alloc_align - 1)) {
+      // align the size and bump to zones.
+      __alloc_zone_idx += (size & ~(alloc_align - 1)) + alloc_align;
+    } else {
+      // bump zone by aligned size
+      __alloc_zone_idx += size;
+    }
+    return t;
   }
 
   void* p = __orig_libc_malloc(size);
@@ -46,12 +73,22 @@ void __libqte_free(void* ptr) {
 
 void* __libqte_calloc(size_t nmemb, size_t size) {
   size_t total_size = nmemb * size;
-
+  if (!__libqte_malloc_initialised) {
+    if (total_size < ALLOC_ZONE_SIZE) {
+      // Use temporary memory while `dl_runtime_resolve` tries to find symbols
+      void* t = &__alloc_zone[__alloc_zone_idx];
+      // TODO: what about aligned bump?
+      __alloc_zone_idx += total_size;
+      return t;
+    } else {
+      // total_size looks like it may be an issue. Don't really have a suitable
+      // way to deal with it right now.
+      return NULL;
+    }
+  }
   void* p = __libqte_malloc(total_size);
-
   if (!p)
     return NULL;
-  // FIXME: could this be the problem?
   __builtin_memset(p, 0, total_size);
   return p;
 };
@@ -63,7 +100,6 @@ void* __libqte_realloc(void* ptr, size_t size) {
 
   if (!ptr)
     return p;
-  // FIXME: could this be the problem?
   __builtin_memcpy(p, ptr, size);
   // free the old pointer
   __libqte_free(ptr);

@@ -36,8 +36,8 @@ void __libqte_init_malloc(void);
 
 void* __libqte_malloc(size_t size);
 void __libqte_free(void* ptr);
-// void* __libqte_calloc(size_t nmemb, size_t size);
-// void* __libqte_realloc(void* ptr, size_t size);
+void* __libqte_calloc(size_t nmemb, size_t size);
+void* __libqte_realloc(void* ptr, size_t size);
 int __libqte_posix_memalign(void** ptr, size_t alignment, size_t size);
 void* __libqte_memalign(size_t alignment, size_t size);
 void* __libqte_aligned_alloc(size_t alignment, size_t size);
