@@ -1,6 +1,6 @@
-#include "assert.h"  // for assert
-#include "errno.h"   // for errno
-#include "libqte.h"  // for LOG
+#include "../include/libqte.h"  // for LOG
+#include "assert.h"             // for assert
+#include "errno.h"              // for errno
 #include "stdlib.h"
 #include "string.h"  // for strerror
 
