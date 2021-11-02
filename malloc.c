@@ -22,6 +22,9 @@ static size_t alloc_align = alignof(max_align_t);
 // infinite recursive loop.
 // The solution is to have a temporary allocation zone, which will be used for
 // local allocations until dl is able to resolve the symbol.
+// for reference:
+// https://stackoverflow.com/questions/6083337/overriding-malloc-using-the-ld-preload-mechanism
+
 #define ALLOC_ZONE_SIZE 4096
 static size_t __alloc_zone_idx;
 static unsigned char __alloc_zone[ALLOC_ZONE_SIZE];
