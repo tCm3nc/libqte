@@ -2,8 +2,7 @@
 #include <pthread.h>   // for pthread_spinlock_t
 #include <stdalign.h>  // for alignof
 #include <stddef.h>    // for max_align_t
-#include <stdint.h>    // for `uintptr_t` type
-#include "libqte.h"
+#include "include/libqte.h"
 
 // A collection of functions that manage the internal malloc hooks.
 
@@ -14,7 +13,7 @@ void* (*__orig_libc_malloc)(size_t);
 void (*__orig_libc_free)(void*);
 int (*__orig_libc_posix_memalign)(void*, size_t, size_t);
 
-static size_t alloc_align = alignof(max_align_t);
+const size_t alloc_align = alignof(max_align_t);
 
 #ifdef __GLIBC__
 // Since symbols are solved lazily at runtime through dl's `dl_runtime_resolve`
@@ -56,8 +55,13 @@ void* __libqte_malloc(size_t size) {
     }
     return t;
   }
-
-  void* p = __orig_libc_malloc(size);
+  // align the size to the tag granule size.
+  size_t aligned_size = size;
+  if (size & (QTE_GRANULE_SIZE - 1)) {
+    aligned_size = (size & ~(QTE_GRANULE_SIZE)-1) + QTE_GRANULE_SIZE;
+  }
+  LOG("size : %zu, aligned size : %zu", size, aligned_size);
+  void* p = __orig_libc_malloc(aligned_size);
   if (!p) {
     LOG("Unable to allocate memory.");
     return NULL;
