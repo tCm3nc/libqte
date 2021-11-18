@@ -61,6 +61,8 @@ void* __libqte_malloc(size_t size) {
     aligned_size = (size & ~(QTE_GRANULE_SIZE)-1) + QTE_GRANULE_SIZE;
   }
   LOG("size : %zu, aligned size : %zu", size, aligned_size);
+  // TODO: for each granule sized block, tag the memory
+
   void* p = __orig_libc_malloc(aligned_size);
   if (!p) {
     LOG("Unable to allocate memory.");
@@ -75,6 +77,8 @@ void __libqte_free(void* ptr) {
     LOG("Freeing a null pointer?");
     return;
   }
+  // TODO: re-generate tags until the next block of tag-aligned memory isn't the
+  // same as our current tag.
   __orig_libc_free(ptr);
 }
 
