@@ -68,6 +68,7 @@ void* __libqte_malloc(size_t size) {
     LOG("Unable to allocate memory.");
     return NULL;
   }
+  LOG("malloc(%zu) = %p", aligned_size, p);
 
   return p;
 }
@@ -75,6 +76,12 @@ void* __libqte_malloc(size_t size) {
 void __libqte_free(void* ptr) {
   if (!ptr) {
     LOG("Freeing a null pointer?");
+    return;
+  }
+  // If the pointer is from our temporary allocation region, just return
+  if ((ptr >= (void*)__alloc_zone) &&
+      (ptr <= ((void*)__alloc_zone + ALLOC_ZONE_SIZE))) {
+    LOG("free(%p) on a temp allocation. no-op", ptr);
     return;
   }
   // TODO: re-generate tags until the next block of tag-aligned memory isn't the
