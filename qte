@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+
+
+def do_main():
+    # get current directory of _this_ file.
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug",
+                        help="Verbose debug log",
+                        action='store_true')
+    parser.add_argument("target",
+                        help="Target program and arguments",
+                        nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+
+    # Copy
+    env = os.environ.copy()
+    if (args.debug):
+        env['QTE_DEBUG'] = '1'
+
+    # LD_PRELOAD our interception library into the target program and run it
+    # through our modified qemu-user
+    argv = [
+        os.path.join(current_dir, "qte-qemu"), "-E",
+        "LD_PRELOAD={}".format(os.path.join(current_dir, "libqte.so"))
+    ]
+    argv += args.target
+    print("{}".format(argv))
+    # Now execute the target program.
+    os.execve(argv[0], argv, env)
+
+
+if __name__ == '__main__':
+    do_main()
