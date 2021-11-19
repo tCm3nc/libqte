@@ -40,6 +40,10 @@ def do_main():
     extra_cflags = ""
     extra_ldflags = ""
     python_dir = sys.executable
+
+    if (args.debug):
+        extra_cflags += "-DDEBUG"
+
     if (args.user):
         # Configure QEMU in user mode
         cmd = 'cd {}; ./configure --target-list="{}-linux-user" --disable-system \

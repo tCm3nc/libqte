@@ -1,7 +1,8 @@
 #define _GNU_SOURCE
-#include <pthread.h>   // for pthread_spinlock_t
-#include <stdalign.h>  // for alignof
-#include <stddef.h>    // for max_align_t
+#include <pthread.h>         // for pthread_spinlock_t
+#include <stdalign.h>        // for alignof
+#include <stddef.h>          // for max_align_t
+#include "../include/qte.h"  // for macros related to talking to the QTE qemu.
 #include "include/libqte.h"
 
 // A collection of functions that manage the internal malloc hooks.
@@ -64,6 +65,9 @@ void* __libqte_malloc(size_t size) {
   // TODO: for each granule sized block, tag the memory
 
   void* p = __orig_libc_malloc(aligned_size);
+  // Inform QTE about this allocation.
+  QTE_ALLOC(p, p + aligned_size);
+
   if (!p) {
     LOG("Unable to allocate memory.");
     return NULL;
