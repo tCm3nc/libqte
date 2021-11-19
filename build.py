@@ -26,10 +26,17 @@ def do_main():
                         help="Architecture for target (default x86_64)",
                         action='store',
                         default="x86_64")
-    parser.add_argument("--debug",
-                        help="Compile in debug mode (default false)",
-                        action='store',
-                        default='true')
+    parser.add_argument(
+        "--debug",
+        help="Compile in debug mode (default false)",
+        action='store',
+        default='true')  # FIXME: this should be false in release
+    parser.add_argument(
+        "--bear",
+        help=
+        "Use the bear interceptor to generate a compile_commands.json file.",
+        action='store',
+        default='true')  # FIXME: this should be false in release
 
     args = parser.parse_args()
     # get directory of _this_ file.
@@ -40,6 +47,8 @@ def do_main():
     extra_cflags = ""
     extra_ldflags = ""
     python_dir = sys.executable
+
+    extra_cflags += "-I{} ".format(os.path.join(current_dir, "qqte"))
 
     if (args.debug):
         extra_cflags += "-DDEBUG"
@@ -56,7 +65,8 @@ def do_main():
         assert (os.system(cmd) == 0)
 
         # compile the project
-        cmd = 'cd {}; make -j `nproc`'.format(os.path.join(current_dir, "qemu"))
+        cmd = 'cd {}; {} make -j `nproc`'.format(
+            os.path.join(current_dir, "qemu"), "bear" if args.bear else "")
         print("{}".format(cmd))
         assert (os.system(cmd) == 0)
 
