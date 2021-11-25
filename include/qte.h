@@ -42,7 +42,7 @@ enum action_t {
 //   syscall(QTE_FAKESYS_NR, action, arg1, arg2, arg3)
 
 static inline long QTE_CALL2(enum action_t action, void* arg1, void* arg2) {
-  return syscall(QTE_FAKESYS_NR, QTE_ACTION_ALLOC, arg1, arg2, NULL);
+  return syscall(QTE_FAKESYS_NR, action, arg1, arg2, NULL);
 }
 
 static inline void* QTE_ALLOC(void* start, void* end) {
