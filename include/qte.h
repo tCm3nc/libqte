@@ -29,6 +29,7 @@
 // Following QASAN's example of how to call the fake syscall.
 
 #define QTE_FAKESYS_NR 0x1337
+#define QTE_GRANULE_SIZE 16
 
 enum action_t {
   QTE_ACTION_ALLOC,
