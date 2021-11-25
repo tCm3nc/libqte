@@ -59,14 +59,17 @@ void* __libqte_malloc(size_t size) {
   // align the size to the tag granule size.
   size_t aligned_size = size;
   if (size & (QTE_GRANULE_SIZE - 1)) {
-    aligned_size = (size & ~(QTE_GRANULE_SIZE)-1) + QTE_GRANULE_SIZE;
+    aligned_size = size + (QTE_GRANULE_SIZE - (size & QTE_GRANULE_SIZE - 1) &
+                           (QTE_GRANULE_SIZE - 1));
   }
   LOG("size : %zu, aligned size : %zu", size, aligned_size);
   // TODO: for each granule sized block, tag the memory
 
   void* p = __orig_libc_malloc(aligned_size);
+  LOG("original malloc returned : %p", p);
   // Inform QTE about this allocation.
-  QTE_ALLOC(p, p + aligned_size);
+  void* tagged_ptr = QTE_ALLOC(p, p + aligned_size);
+  LOG("Tagged malloc pointer : %p", tagged_ptr);
 
   if (!p) {
     LOG("Unable to allocate memory.");
