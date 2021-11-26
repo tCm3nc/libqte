@@ -23,9 +23,9 @@ def do_main():
                         action='store',
                         default="clang++")
     parser.add_argument("--arch",
-                        help="Architecture for target (default x86_64)",
+                        help="Architecture for target (default x86)",
                         action='store',
-                        default="x86_64")
+                        default="x86")
     parser.add_argument(
         "--debug",
         help="Compile in debug mode (default false)",
@@ -80,6 +80,9 @@ def do_main():
         extra_arg = ""
         if (args.debug):
             extra_arg = "debug"
+        # FIXME: figure out how to support multiple arguments to make file.
+        if (arch == 'i386'):
+            extra_arg = 'i386'
 
         cmd = 'cd {}; make {}'.format(os.path.join(current_dir, "libqte"),
                                       extra_arg)
