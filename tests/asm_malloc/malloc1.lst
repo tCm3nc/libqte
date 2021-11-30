@@ -1,0 +1,38 @@
+     1                                  ; malloc1.asm
+     2                                  ; Assemble : nasm -f elf -l malloc1.lst malloc1.asm
+     3                                  ; link : gcc -m32 -o malloc1 malloc1.o
+     4                                  ; Run : malloc1
+     5                                  ; Output : ??
+     6                                  
+     7                                  ; Declare some external functions
+     8                                  ; 
+     9                                      extern malloc, free
+    10                                      SECTION .data ; Initialised variables
+    11                                      ; foo
+    12                                  
+    13                                      SECTION .text ; Code section
+    14                                      global main ; standard entry point for gcc. 
+    15                                  main:
+    16 00000000 55                          push ebp
+    17 00000001 89E5                        mov ebp, esp ; Setup the stack frame, save old and swap it to EBP
+    18 00000003 B800100000                  mov eax, 0x1000; size
+    19 00000008 50                          push eax
+    20 00000009 E8(00000000)                call malloc
+    21                                      ; fix stack frame
+    22 0000000E 83C404                      add esp, 1*4  ; 1 param only to malloc
+    23                                  
+    24                                      ; Use the malloc ptr to write some data
+    25 00000011 C700CEFAEDFE                mov dword[eax], 0xfeedface
+    26                                  
+    27                                      ; free the malloced ptr
+    28 00000017 50                          push eax
+    29 00000018 E8(00000000)                call free
+    30                                      ; fix stack frame
+    31 0000001D 83C404                      add esp, 1 * 4 ; 1 param to free
+    32                                  
+    33                                      ; teardown stackframe
+    34 00000020 89EC                        mov esp, ebp
+    35 00000022 5D                          pop ebp
+    36                                      ; return 0 as success
+    37 00000023 B800000000                  mov eax, 0;
+    38 00000028 C3                          ret
