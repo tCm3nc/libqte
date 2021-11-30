@@ -15,6 +15,7 @@
     fprintf(stderr, "[%s:%s:%d]:\t\t", __FILE__, __func__, __LINE__); \
     fprintf(stderr, x);                                               \
     fprintf(stderr, "\n");                                            \
+    fflush(stderr);                                                   \
   } while (0)
 #else
 #define LOG(x...) (void)(0);
