@@ -1,6 +1,7 @@
 #ifndef QTE_H
 #define QTE_H
 
+#include <stdlib.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -10,6 +11,7 @@
     fprintf(stderr, "[%s:%s:%d]:\t\t", __FILE__, __func__, __LINE__); \
     fprintf(stderr, x);                                               \
     fprintf(stderr, "\n");                                            \
+    fflush(stderr);                                                   \
   } while (0)
 #else
 #define LOG(x...) (void)(0);
@@ -42,13 +44,21 @@ enum action_t {
 // #define QTE_CALL3(action, arg1, arg2, arg3) \
 //   syscall(QTE_FAKESYS_NR, action, arg1, arg2, arg3)
 
+static inline long QTE_CALL1(enum action_t action, void* arg1) {
+  return syscall(QTE_FAKESYS_NR, action, arg1);
+}
 static inline long QTE_CALL2(enum action_t action, void* arg1, void* arg2) {
   return syscall(QTE_FAKESYS_NR, action, arg1, arg2, NULL);
 }
 
 static inline void* QTE_ALLOC(void* start, void* end) {
-  void* p_tagged = (void*)QTE_CALL2(QTE_ACTION_ALLOC, start, end);
-  return p_tagged;
+  void* ptr_tagged = (void*)QTE_CALL2(QTE_ACTION_ALLOC, start, end);
+  return ptr_tagged;
+}
+
+static inline void* QTE_FREE(void* ptr) {
+  void* ptr_untagged = (void*)QTE_CALL1(QTE_ACTION_DEALLOC, ptr);
+  return ptr_untagged;
 }
 
 #endif

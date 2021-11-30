@@ -66,18 +66,17 @@ void* __libqte_malloc(size_t size) {
   // TODO: for each granule sized block, tag the memory
 
   void* p = __orig_libc_malloc(aligned_size);
-  LOG("original malloc returned : %p", p);
   // Inform QTE about this allocation.
   void* tagged_ptr = QTE_ALLOC(p, p + aligned_size);
-  LOG("Tagged malloc pointer : %p", tagged_ptr);
+  LOG("original malloc returned : %p", p);
+  LOG("Tagged malloc pointer(%zu) : %p", aligned_size, tagged_ptr);
 
   if (!p) {
     LOG("Unable to allocate memory.");
     return NULL;
   }
-  LOG("malloc(%zu) = %p", aligned_size, p);
 
-  return p;
+  return tagged_ptr;
 }
 
 void __libqte_free(void* ptr) {
@@ -91,9 +90,11 @@ void __libqte_free(void* ptr) {
     LOG("free(%p) on an internal pre-malloc allocation. no-op", ptr);
     return;
   }
+  void* untagged_ptr = QTE_FREE(ptr);
+  LOG("untagged ptr : %p, tagged ptr : %p", untagged_ptr, ptr);
   // TODO: re-generate tags until the next block of tag-aligned memory isn't the
   // same as our current tag.
-  __orig_libc_free(ptr);
+  __orig_libc_free(untagged_ptr);
 }
 
 void* __libqte_calloc(size_t nmemb, size_t size) {
