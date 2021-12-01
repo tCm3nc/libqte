@@ -12,8 +12,12 @@ def do_main():
                         help="Verbose debug log",
                         action='store_true')
     parser.add_argument("--debugger",
-                        help="launch QTE with GDB",
+                        help="launch QTE with gdb",
                         action='store_true')
+    parser.add_argument("--debug_engine",
+                        help="Which debugging engine to use (default gdb)",
+                        choices=['rr', 'gdb'],
+                        default='rr')  # FIXME: this should be gdb
     parser.add_argument("target",
                         help="Target program and arguments",
                         nargs=argparse.REMAINDER)
@@ -30,9 +34,12 @@ def do_main():
         os.path.join(current_dir, "qte-qemu"), "-E",
         "LD_PRELOAD={}".format(os.path.join(current_dir, "libqte.so"))
     ]
-    if (args.debugger):
+    if ((args.debugger) and (args.debug_engine == 'gdb')):
         argv.insert(0, '/usr/bin/gdb')
         argv.insert(1, '--args')
+    if ((args.debugger) and (args.debug_engine == 'rr')):
+        argv.insert(0, '/usr/bin/rr')
+        argv.insert(1, 'record')
     argv += args.target
     print("{}".format(argv))
     # Now execute the target program.
