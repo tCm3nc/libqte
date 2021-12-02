@@ -18,6 +18,10 @@ def do_main():
                         help="Which debugging engine to use (default gdb)",
                         choices=['rr', 'gdb'],
                         default='gdb')
+    parser.add_argument("--strace",
+                        help="Allow passing of the strace flag to QEMU",
+                        action='store_true',
+                        default='false')
     parser.add_argument("target",
                         help="Target program and arguments",
                         nargs=argparse.REMAINDER)
@@ -31,9 +35,12 @@ def do_main():
     # LD_PRELOAD our interception library into the target program and run it
     # through our modified qemu-user
     argv = [
-        os.path.join(current_dir, "qte-qemu"), "-E",
-        "LD_PRELOAD={}".format(os.path.join(current_dir, "libqte.so"))
+        os.path.join(current_dir, "qte-qemu"),
+        "-E",
+        "LD_PRELOAD={}".format(os.path.join(current_dir, "libqte.so")),
     ]
+    if ((args.strace)):
+        argv.append('-strace')
     if ((args.debugger) and (args.debug_engine == 'gdb')):
         argv.insert(0, '/usr/bin/gdb')
         argv.insert(1, '--args')
