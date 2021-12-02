@@ -180,3 +180,8 @@ void* __libqte_aligned_alloc(size_t alignment, size_t size) {
 // size)
 // pvalloc(size_t size) - similar to valloc, but rounds the size of allocation
 // up to the next multiple of the system page size.
+
+// Dynamically raising a trap instruction to QEMU to enable debugging.
+void __libqte_debug() {
+  QTE_DEBUG();
+}

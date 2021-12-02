@@ -45,4 +45,6 @@ int __libqte_posix_memalign(void** ptr, size_t alignment, size_t size);
 void* __libqte_memalign(size_t alignment, size_t size);
 void* __libqte_aligned_alloc(size_t alignment, size_t size);
 
+void __libqte_debug(void);
+
 #endif  // LIBQTE_H

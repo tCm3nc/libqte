@@ -36,6 +36,7 @@
 enum action_t {
   QTE_ACTION_ALLOC,
   QTE_ACTION_DEALLOC,
+  QTE_ACTION_DEBUG,
 };
 
 // #define QTE_CALL0(action) syscall(QTE_FAKESYS_NR, action, NULL, NULL, NULL)
@@ -44,6 +45,9 @@ enum action_t {
 // #define QTE_CALL3(action, arg1, arg2, arg3) \
 //   syscall(QTE_FAKESYS_NR, action, arg1, arg2, arg3)
 
+static inline long QTE_CALL0(enum action_t action) {
+  return syscall(QTE_FAKESYS_NR, action);
+}
 static inline long QTE_CALL1(enum action_t action, void* arg1) {
   return syscall(QTE_FAKESYS_NR, action, arg1);
 }
@@ -59,6 +63,10 @@ static inline void* QTE_ALLOC(void* start, void* end) {
 static inline void* QTE_FREE(void* ptr) {
   void* ptr_untagged = (void*)QTE_CALL1(QTE_ACTION_DEALLOC, ptr);
   return ptr_untagged;
+}
+
+static inline void QTE_DEBUG() {
+  QTE_CALL0(QTE_ACTION_DEBUG);
 }
 
 #endif
