@@ -17,7 +17,7 @@ def do_main():
     parser.add_argument("--debug_engine",
                         help="Which debugging engine to use (default gdb)",
                         choices=['rr', 'gdb'],
-                        default='rr')  # FIXME: this should be gdb
+                        default='gdb')
     parser.add_argument("target",
                         help="Target program and arguments",
                         nargs=argparse.REMAINDER)
