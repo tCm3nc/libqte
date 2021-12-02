@@ -20,8 +20,7 @@ def do_main():
                         default='gdb')
     parser.add_argument("--strace",
                         help="Allow passing of the strace flag to QEMU",
-                        action='store_true',
-                        default='false')
+                        action='store_true')
     parser.add_argument("target",
                         help="Target program and arguments",
                         nargs=argparse.REMAINDER)
