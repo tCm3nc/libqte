@@ -8,8 +8,8 @@ HEADERS = include/libqte.h
 all: $(HEADERS) $(FILES)
 	$(CC) $(CFLAGS) -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)
 debug: $(HEADERS) $(FILES)
-	$(CC) $(CFLAGS) -DDEBUG -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)
+	$(CC) $(CFLAGS) -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)
 i386: $(HEADERS) $(FILES)
-	$(CC) $(CFLAGS) -DDEBUG -m32 -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)
+	$(CC) $(CFLAGS) -m32 -fPIC -shared $(FILES) -o libqte.so $(LDFLAGS)
 clean: $(HEADERS) $(FILES)
 	rm libqte.so

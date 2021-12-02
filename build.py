@@ -25,17 +25,16 @@ def do_main():
     parser.add_argument("--arch",
                         help="Architecture for target (default x86)",
                         action='store',
+                        choices=['x86_64', 'x86'],
                         default="x86")
-    parser.add_argument(
-        "--debug",
-        help="Compile in debug mode (default false)",
-        action='store',
-        default='true')  # FIXME: this should be false in release
+    parser.add_argument("--debug",
+                        help="Compile in debug mode (default false)",
+                        action='store_true')
     parser.add_argument(
         "--bear",
         help=
         "Use the bear interceptor to generate a compile_commands.json file.",
-        action='store',
+        action='store_true',
         default='true')  # FIXME: this should be false in release
 
     args = parser.parse_args()
@@ -77,15 +76,19 @@ def do_main():
             os.path.join(current_dir, "qte-qemu"))
 
         # Compile the interception library
-        extra_arg = ""
+        target = ""
         if (args.debug):
-            extra_arg = "debug"
-        # FIXME: figure out how to support multiple arguments to make file.
+            target = "debug"
         if (arch == 'i386'):
-            extra_arg = 'i386'
+            target = 'i386'
 
-        cmd = 'cd {}; make {}'.format(os.path.join(current_dir, "libqte"),
-                                      extra_arg)
+        extra_cflags = "CFLAGS="
+        if (args.debug):
+            extra_cflags += "{}".format("-DDEBUG")
+
+        cmd = 'cd {}; make {} {}'.format(os.path.join(current_dir, "libqte"),
+                                         target, extra_cflags)
+        print(cmd)
         assert (os.system(cmd) == 0)
 
         # Copy the intercept library to the top level directory
