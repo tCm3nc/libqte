@@ -47,3 +47,9 @@ void* aligned_alloc(size_t alignment, size_t size) {
   LOG("aligned_alloc(%zu, %zu) = %p", alignment, size, p);
   return p;
 }
+
+// TODO: still have fgets, memcmp, memcpy, mempcpy, memmove, memset, memchr,
+// memrchr, memmem, bcmp, explicit_bzero, strchr, strrchr, strcasecmp,
+// strncasecmp, strcat, strcmp, strncmp, strcpy, strncpy, stpcpy, strdup,
+// strlen, strnlen, strstr, strcasestr, atoi, atol, atoll, wcslen, wcscpy,
+// wscscmp to implement.
