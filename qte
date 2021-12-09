@@ -24,6 +24,12 @@ def do_main():
     parser.add_argument("target",
                         help="Target program and arguments",
                         nargs=argparse.REMAINDER)
+    parser.add_argument(
+        "--tcg-ir",
+        help=
+        "Print out TCG IR opcode, input ASM and output ASM (NOTE: VERY VERBOSE)",
+        action='store_true')
+
     args = parser.parse_args()
 
     # Copy
@@ -46,6 +52,10 @@ def do_main():
     if ((args.debugger) and (args.debug_engine == 'rr')):
         argv.insert(0, '/usr/bin/rr')
         argv.insert(1, 'record')
+    if (args.tcg_ir):
+        argv.append("-d")
+        argv.append("in_asm,op,out_asm")
+
     argv += args.target
     print("{}".format(argv))
     # Now execute the target program.
