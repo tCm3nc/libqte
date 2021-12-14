@@ -82,12 +82,13 @@ void* __libqte_malloc(size_t size) {
     LOG("Unable to allocate memory.");
     return NULL;
   }
-  p->requested_size = aligned_size;
+  p->requested_size = size;
   p->aligned_orig = NULL;
   p->next = p->prev = NULL;
 
   // Inform QTE about this allocation.
-  void* tagged_ptr = QTE_ALLOC(&p[1], (char*)&p[1] + aligned_size);
+  // NOTE: We only inform QTE of the requested size.
+  void* tagged_ptr = QTE_ALLOC(&p[1], (char*)&p[1] + size);
   LOG("Original alloc(%zu) %p, Tagged alloc(%zu) : %p", size, p, aligned_size,
       tagged_ptr);
 
