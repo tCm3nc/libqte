@@ -2,6 +2,7 @@ libqte.so
 qte-qemu
 compile_commands.json
 tests/use_after_free/use_after_free
+tests/use_after_free/t # this is the clang compiled -fsanitize=address based test case
 tests/asm_malloc/malloc1
 tests/asm_malloc/malloc1.lst
 tests/heap_oob_read/heap_oob_read
