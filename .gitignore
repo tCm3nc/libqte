@@ -5,6 +5,7 @@ tests/use_after_free/use_after_free
 tests/use_after_free/t # this is the clang compiled -fsanitize=address based test case
 tests/asm_malloc/malloc1
 tests/asm_malloc/malloc1.lst
+tests/asm_malloc/malloc1.o
 tests/heap_oob_read/heap_oob_read
 tests/heap_oob_read/t
 tests/heap_oob_write/heap_oob_write
