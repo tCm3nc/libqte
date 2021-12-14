@@ -1,6 +1,7 @@
 #ifndef QTE_H
 #define QTE_H
 
+#include <stdint.h>  // for uint*_t types
 #include <stdlib.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -33,10 +34,15 @@
 #define QTE_FAKESYS_NR 0x1337
 #define QTE_GRANULE_SIZE 16
 
+#define QTE_ENABLED (0)
+#define QTE_DISABLED (1)
+
 enum action_t {
   QTE_ACTION_ALLOC,
   QTE_ACTION_DEALLOC,
   QTE_ACTION_DEBUG,
+  QTE_ACTION_SWAP_STATE,
+  QTE_ACTION_UNTAG,
 };
 
 // #define QTE_CALL0(action) syscall(QTE_FAKESYS_NR, action, NULL, NULL, NULL)
@@ -65,6 +71,15 @@ static inline void* QTE_FREE(void* ptr) {
   return ptr_untagged;
 }
 
+static inline uint8_t QTE_SWAP(uint8_t state) {
+  uint8_t ret = (uint8_t)QTE_CALL1(QTE_ACTION_SWAP_STATE, (void*)(long)state);
+  return ret;
+}
+
+static inline void* QTE_UNTAG(void* ptr) {
+  void* ptr_untagged = (void*)QTE_CALL1(QTE_ACTION_UNTAG, ptr);
+  return ptr_untagged;
+}
 static inline void QTE_DEBUG() {
   QTE_CALL0(QTE_ACTION_DEBUG);
 }
