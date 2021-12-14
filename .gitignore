@@ -4,3 +4,7 @@ compile_commands.json
 tests/use_after_free/use_after_free
 tests/asm_malloc/malloc1
 tests/asm_malloc/malloc1.lst
+tests/heap_oob_read/heap_oob_read
+tests/heap_oob_read/t
+tests/heap_oob_write/heap_oob_write
+tests/heap_oob_write/t
