@@ -12,7 +12,6 @@ bool __libqte_malloc_initialised;
 // function prototype of the original malloc and free implementation for GLIBC
 void* (*__orig_libc_malloc)(size_t);
 void (*__orig_libc_free)(void*);
-int (*__orig_libc_posix_memalign)(void*, size_t, size_t);
 
 const size_t alloc_align = alignof(max_align_t);
 
@@ -30,13 +29,19 @@ static size_t __alloc_zone_idx;
 static unsigned char __alloc_zone[ALLOC_ZONE_SIZE];
 #endif
 
+struct chunk_begin {
+  size_t requested_size;
+  void* aligned_orig;  // NULL if not aligned
+  struct chunk_begin* next;
+  struct chunk_begin* prev;
+};
+
 void __libqte_init_malloc(void) {
   if (__libqte_malloc_initialised)
     return;
 
   __orig_libc_malloc = dlsym(RTLD_NEXT, "malloc");
   __orig_libc_free = dlsym(RTLD_NEXT, "free");
-  __orig_libc_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
 
   __libqte_malloc_initialised = 1;
   LOG("malloc initialised");
@@ -63,16 +68,28 @@ void* __libqte_malloc(size_t size) {
                            (QTE_GRANULE_SIZE - 1));
   }
 
-  void* p = __orig_libc_malloc(aligned_size);
-  // Inform QTE about this allocation.
-  void* tagged_ptr = QTE_ALLOC(p, p + aligned_size);
-  LOG("Original pointer(%zu) %p, Tagged pointer(%zu) : %p", size, p,
-      aligned_size, tagged_ptr);
+  // TODO: disable QTE for this thread. Otherwise it results in a recursive
+  // loop where the backend malloc calls realloc, and that calls further libc
+  // functions which result in QTE instrumentation picking it up and bailing on
+  // load-widening instances inside libc's optimised implementations.
+  uint8_t state = QTE_SWAP(QTE_DISABLED);
+  struct chunk_begin* p =
+      __orig_libc_malloc(sizeof(struct chunk_begin) + aligned_size);
+  // Now renable
+  QTE_SWAP(state);
 
   if (!p) {
     LOG("Unable to allocate memory.");
     return NULL;
   }
+  p->requested_size = aligned_size;
+  p->aligned_orig = NULL;
+  p->next = p->prev = NULL;
+
+  // Inform QTE about this allocation.
+  void* tagged_ptr = QTE_ALLOC(&p[1], (char*)&p[1] + aligned_size);
+  LOG("Original alloc(%zu) %p, Tagged alloc(%zu) : %p", size, p, aligned_size,
+      tagged_ptr);
 
   return tagged_ptr;
 }
@@ -88,11 +105,21 @@ void __libqte_free(void* ptr) {
     LOG("free(%p) on an internal pre-malloc allocation. no-op", ptr);
     return;
   }
-  void* untagged_ptr = QTE_FREE(ptr);
+  struct chunk_begin* p = ptr;
+  p -= 1;
+  // size_t n = p->requested_size;
+  // TODO: finish checking!
+  // QTE_STORE
+  void* untagged_ptr = QTE_FREE(&p[1]);
   LOG("untagged ptr : %p, tagged ptr : %p", untagged_ptr, ptr);
-  // TODO: re-generate tags until the next block of tag-aligned memory isn't the
-  // same as our current tag.
-  __orig_libc_free(untagged_ptr);
+  // TODO: disable QTE for this thread. See note in `__libqte_malloc` for why.
+  uint8_t state = QTE_SWAP(QTE_DISABLED);
+  // Free the allocation as well as the `struct chunk_begin` header.
+  struct chunk_begin* q = untagged_ptr;
+  q -= 1;
+  __orig_libc_free(q);
+  // re-enable after backend free.
+  QTE_SWAP(state);
 }
 
 void* __libqte_calloc(size_t nmemb, size_t size) {
@@ -124,7 +151,20 @@ void* __libqte_realloc(void* ptr, size_t size) {
 
   if (!ptr)
     return p;
-  __builtin_memcpy(p, ptr, size);
+  // disable QTE for this thread as the following access will throw an invalid
+  // access error. (`chunk_begin` hasn't been tagged in QTE land.)
+  // TODO: verify that this behaviour is as intended.
+  uint8_t state = QTE_SWAP(QTE_DISABLED);
+  // Still need to translate the pointer though!
+  uintptr_t untagged_ptr = (uintptr_t)QTE_UNTAG(ptr);
+  LOG("realloc(%p -> %p)", (void*)(long)ptr, (void*)(long)untagged_ptr);
+  // ptr = untagged_ptr;
+  size_t n = ((struct chunk_begin*)untagged_ptr)[-1].requested_size;
+  if (size < n)
+    n = size;
+  // re-enable QTE
+  QTE_SWAP(state);
+  __builtin_memcpy(p, ptr, n);
   // free the old pointer
   __libqte_free(ptr);
   return p;
@@ -150,10 +190,28 @@ int __libqte_posix_memalign(void** ptr, size_t alignment, size_t size) {
     return 0;
   }
 
-  // pass to original implementation
-  void* p = NULL;
-  int ret = __orig_libc_posix_memalign(&p, alignment, size);
-  *ptr = p;
+  size_t rem = size % alignment;
+  size_t len = size;
+  if (rem)
+    len += rem;
+
+  // TODO: Disable QTE for this thread. See note in `__libqte_malloc` for why.
+  uint8_t state = QTE_SWAP(QTE_DISABLED);
+  char* orig = __orig_libc_malloc(sizeof(struct chunk_begin) + len);
+  QTE_SWAP(state);
+
+  if (!orig)
+    return ENOMEM;
+
+  char* data = orig + sizeof(struct chunk_begin);
+  data += alignment - ((uintptr_t)data % alignment);
+
+  struct chunk_begin* p = (struct chunk_begin*)data - 1;
+  p->requested_size = len;
+  p->aligned_orig = orig;
+
+  void* tagged_ptr = QTE_ALLOC(data, data + len);
+  *ptr = tagged_ptr;
   return 0;
 }
 

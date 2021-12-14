@@ -2,7 +2,7 @@ CC = clang
 CFLAGS += -Wno-int-to-void-pointer-cast -ggdb
 LDFLAGS += -ldl -pthread
 
-FILES = libqte.c hooks.c malloc.c
+FILES = libqte.c hooks.c malloc.c string.c
 HEADERS = include/libqte.h
 
 all: $(HEADERS) $(FILES)
