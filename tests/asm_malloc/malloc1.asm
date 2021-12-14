@@ -6,7 +6,7 @@
 
 ; Declare some external functions
 ; 
-    extern malloc, free
+    extern malloc, free, memcpy
     SECTION .data ; Initialised variables
     ; foo
 
@@ -23,11 +23,34 @@ main:
 
     ; Use the malloc ptr to write some data
     mov dword[eax], 0xfeedface
+    ; Allocate another round of memory.
+    mov ebx, eax
+    mov eax, 0x1000; size
+    push eax
+    call malloc
+    ; fix stack frame
+    add esp, 1*4 ; 1 param only to malloc
+    ; Write to the LAST of the buffer
+    mov dword[eax+0x1000-4], 0xdeadbeef
+
+    ; memcpy from one to other
+    mov ecx, 0x1000
+    push ecx ; count
+    push ebx ; src 
+    push eax ; dest
+    call memcpy
+    ; fix stack frame
+    add esp, 3*4; 3 params to memcpy
 
     ; free the malloced ptr
     push eax
     call free
     ; fix stack frame
+    add esp, 1 * 4 ; 1 param to free
+
+    ; free the first malloced ptr
+    push ebx
+    call free
     add esp, 1 * 4 ; 1 param to free
 
     ; teardown stackframe
