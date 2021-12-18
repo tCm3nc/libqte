@@ -33,6 +33,7 @@
 
 #define QTE_FAKESYS_NR 0x1337
 #define QTE_GRANULE_SIZE 16
+#define BLOCK_ALLOCATION_ALIGN (1<<16)
 
 #define QTE_ENABLED (0)
 #define QTE_DISABLED (1)
