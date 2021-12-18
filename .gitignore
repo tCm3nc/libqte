@@ -11,3 +11,4 @@ tests/heap_oob_read/heap_oob_read
 tests/heap_oob_read/t
 tests/heap_oob_write/heap_oob_write
 tests/heap_oob_write/t
+tests/pointer_arithmetic/pointer_arithmetic
