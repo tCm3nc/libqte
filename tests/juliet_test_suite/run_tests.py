@@ -104,7 +104,7 @@ def run_tests():
                     truth = 'good'
 
                 hash_mat = testcase + tool + truth
-                hash_id = hashlib.sha256(testcase.encode()).hexdigest()
+                hash_id = hashlib.sha256(hash_mat.encode()).hexdigest()
 
                 # print(
                 #     "ID : {}, Tool under test : {} Class : {}, truth : {}, testcase : {}"
