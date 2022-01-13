@@ -6,6 +6,7 @@ import subprocess
 import re
 import sqlite3 as sl
 import hashlib
+import multiprocessing as mp
 
 DATABASE_FILENAME = 'collect.db'
 
@@ -76,6 +77,8 @@ def run_tests():
     # Passing in the AFL_USE_QTE=1 environment variable.
     qte_binary = "../../qte-qemu"
     libqte_library = "../../libqte.so"
+    # TODO: QASAN
+    # TODO: ASAN
 
     if not (os.path.exists(qte_binary)):
         print(
