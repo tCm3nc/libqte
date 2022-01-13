@@ -13,3 +13,5 @@ tests/heap_oob_write/heap_oob_write
 tests/heap_oob_write/t
 tests/pointer_arithmetic/pointer_arithmetic
 *.out
+# Ignore the built database
+*.db
