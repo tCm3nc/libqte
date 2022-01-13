@@ -115,7 +115,20 @@ def run_qte(arg):
 
 def add_to_database(result):
     print("Adding result to DB..")
-    print("{}".format(result))
+    # print("{}".format(result))
+    sql_query = 'INSERT INTO EXPERIMENT ' + \
+    '(id, filename, tool, truth, class, ret_code, ret_output, ret_status)' + \
+    ' values(?, ?, ?, ?, ?, ?, ?, ?)'
+
+    # Update the DB
+    con = sl.connect(DATABASE_FILENAME)
+    with con:
+        try:
+            con.executemany(sql_query, (result,))
+        except sl.IntegrityError as ie:
+            print("Possible duplicate entry in DB.. skipping..")
+            print("{}".format(ie))
+            pass
     return ""
 
 
@@ -163,10 +176,12 @@ def run_tests():
         # Now we have the list of tests we want to run, we should run it against
         # each tool we know of in a scaled multiprocessed way.
         p = mp.Pool(processes=mp.cpu_count() - 1)
-        results = []
+        i = 0
         for r in p.imap_unordered(run_qte, built_testcases, chunksize=100):
             add_to_database(r)
-            exit()
+            i += 1
+            if (i == 2):
+                exit()
 
         # p.close()
         # p.join()
