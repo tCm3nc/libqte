@@ -20,8 +20,8 @@ def run_qte(qte_binary, testcase):
                                          stderr=subprocess.STDOUT,
                                          timeout=5)
     except subprocess.CalledProcessError as cpe:
-        pp.pprint("QTE returned code : {}".format(cpe.returncode))
-        pp.pprint("QTE : {}".format(cpe.output))
+        # pp.pprint("QTE returned code : {}".format(cpe.returncode))
+        # pp.pprint("QTE : {}".format(cpe.output))
         output = cpe.output
         return (cpe.returncode, output)
     except subprocess.TimeoutExpired as te:
@@ -31,6 +31,15 @@ def run_qte(qte_binary, testcase):
 
     # otherwise successful run.
     return (0, output)
+
+
+# this regex matches on:
+# tool      - the directory which indiciates the tool under test (qte/qasan, asan)
+# class     - the class of the bug being tested
+# dir       - the directory of the test (they are grouped under good/bad tests)
+# testcase  - the testcase that is being passed to QTE.
+
+classifier_regex = "^.*\/(?P<tool>.*)_.*_tests\/.*(?P<class>CWE.*)\/(?P<dir>.*\/).*(?P<testcase>CWE.*.*__.*_.*.out)$"
 
 
 def run_tests():
@@ -51,21 +60,30 @@ def run_tests():
         if not ('good_tests' in root):
             for name in files:
                 if (name.endswith(".out")):
-                    # match = re.search("^(?P<root>CWE(\d+).*__.*_(\d+).out)$",
-                    #                   name)
-                    print("name is : {}".format(name))
-                    # print("root is : {}".format(match.group("root")))
                     testcase = ('{}/{}'.format(root, name))
+                    match = re.search(classifier_regex, testcase)
+
+                    tool = match.group("tool")
+                    bugclass = match.group("class")
+                    dir = match.group("dir")
+                    binary_test = match.group("testcase")
+
+                    print(
+                        "Tool under test : {} Class : {}, directory : {}, testcase : {}"
+                        .format(tool, bugclass, dir, binary_test))
+
                     print("Running QTE on : {}".format(testcase))
                     # QTE is present, we can run test cases.
 
                     ret, output = run_qte(qte_binary, testcase)
                     # if (ret != 0):
-                    #     # Failing or timed out test case!
+                    # Failing or timed out test case!
+                    # pp.pprint("QTE ret code : {} output : {}".format(
+                    # ret, output))
                     #     with open("report.txt", "a") as f:
                     #         f.write("Failure testcase : {}\n".format(testcase))
                     # Exit early as a test condition.
-                    exit()
+                    #exit()
 
 
 if __name__ == '__main__':
