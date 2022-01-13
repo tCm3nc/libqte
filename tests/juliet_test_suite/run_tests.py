@@ -86,7 +86,9 @@ def run_tests():
         exit()
 
     built_testcases = []
-    for root, dirs, files in os.walk(os.getcwd(), topdown=True):
+    for root, dirs, files in os.walk(os.getcwd(),
+                                     topdown=True,
+                                     followlinks=True):
         for name in files:
             if (name.endswith(".out")):
                 testcase = ('{}/{}'.format(root, name))
@@ -113,7 +115,6 @@ def run_tests():
 
     if (len(built_testcases) > 0):
         print("Total testcases : {}".format(len(built_testcases)))
-
     # Now we have the list of tests we want to run, we should run it against
     # each tool we know of in a scaled multiprocessed way.
 
