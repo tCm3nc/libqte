@@ -3,6 +3,7 @@
 import os
 import pprint as pp
 import subprocess
+import re
 
 
 def run_qte(qte_binary, testcase):
@@ -16,12 +17,17 @@ def run_qte(qte_binary, testcase):
         output = subprocess.check_output(file_to_exec,
                                          env=env,
                                          shell=True,
-                                         stderr=subprocess.STDOUT)
+                                         stderr=subprocess.STDOUT,
+                                         timeout=5)
     except subprocess.CalledProcessError as cpe:
         pp.pprint("QTE returned code : {}".format(cpe.returncode))
         pp.pprint("QTE : {}".format(cpe.output))
         output = cpe.output
         return (cpe.returncode, output)
+    except subprocess.TimeoutExpired as te:
+        pp.pprint("QTE timed out on testcase :{}".format(file_to_exec))
+        output = te.output
+        return (2, output)
 
     # otherwise successful run.
     return (0, output)
@@ -45,15 +51,19 @@ def run_tests():
         if not ('good_tests' in root):
             for name in files:
                 if (name.endswith(".out")):
+                    # match = re.search("^(?P<root>CWE(\d+).*__.*_(\d+).out)$",
+                    #                   name)
+                    print("name is : {}".format(name))
+                    # print("root is : {}".format(match.group("root")))
                     testcase = ('{}/{}'.format(root, name))
                     print("Running QTE on : {}".format(testcase))
                     # QTE is present, we can run test cases.
 
                     ret, output = run_qte(qte_binary, testcase)
-                    if (ret != 0):
-                        # Failing test case!
-                        with open("report.txt", "w") as f:
-                            f.write("Failure testcase : {}".format(testcase))
+                    # if (ret != 0):
+                    #     # Failing or timed out test case!
+                    #     with open("report.txt", "a") as f:
+                    #         f.write("Failure testcase : {}\n".format(testcase))
                     # Exit early as a test condition.
                     exit()
 
