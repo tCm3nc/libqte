@@ -244,7 +244,7 @@ def run_asan(arg):
         return testcase_block
 
     except subprocess.TimeoutExpired as te:
-        pp.pprint("QTE timed out on testcase :{}".format(file_to_exec))
+        pp.pprint("ASAN timed out on testcase :{}".format(file_to_exec))
         testcase_block.append(1)
         testcase_block.append(output)
         testcase_block.append("timedout")
@@ -312,8 +312,7 @@ def run_tests():
         # each tool we know of in a scaled multiprocessed way.
         start = timer()
         p = mp.Pool(processes=mp.cpu_count() - 1)
-        # FIXME: poor mans stopper.
-        i = 0
+
         qte_results = []
         qasan_results = []
         asan_results = []
@@ -348,9 +347,6 @@ def run_tests():
         print("Processing output of returned results now.")
         for r in qte_results:
             add_to_database(r)
-            i += 1
-            if (i == 2):
-                break
         for r in qasan_results:
             add_to_database(r)
 
