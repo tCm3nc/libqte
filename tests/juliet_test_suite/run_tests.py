@@ -8,6 +8,7 @@ import re
 import sqlite3 as sl
 import hashlib
 import multiprocessing as mp
+from timeit import default_timer as timer
 
 DATABASE_FILENAME = 'collect.db'
 
@@ -113,6 +114,12 @@ def run_qte(arg):
     return testcase_block
 
 
+def run_asan(arg):
+    '''
+    Have to supply ASAN_OPTIONS=detect_leaks=0
+    '''
+
+
 def add_to_database(result):
     print("Adding result to DB..")
     # print("{}".format(result))
@@ -175,13 +182,16 @@ def run_tests():
         print("Total testcases : {}".format(len(built_testcases)))
         # Now we have the list of tests we want to run, we should run it against
         # each tool we know of in a scaled multiprocessed way.
+        start = timer()
         p = mp.Pool(processes=mp.cpu_count() - 1)
         i = 0
         for r in p.imap_unordered(run_qte, built_testcases, chunksize=100):
             add_to_database(r)
             i += 1
             if (i == 2):
-                exit()
+                break
+        end = timer()
+        print("Elapsed time : {}".format(end - start))
 
         # p.close()
         # p.join()
