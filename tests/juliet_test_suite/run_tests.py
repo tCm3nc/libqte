@@ -254,9 +254,9 @@ def run_tests():
                 hash_mat = testcase + tool + truth
                 hash_id = hashlib.sha256(hash_mat.encode()).hexdigest()
 
-                # print(
-                #     "ID : {}, Tool under test : {} Class : {}, truth : {}, testcase : {}"
-                #     .format(hash_id, tool, bugclass, truth, testcase))
+                # print("ID : {}, Tool under test : {} Class : {}, truth : {},\
+                #  testcase : {}".format(hash_id, tool, bugclass, truth,
+                #                        testcase))
 
                 built_testcases.append(
                     [hash_id, testcase, tool, truth, bugclass])
