@@ -212,6 +212,50 @@ def run_asan(arg):
         testcase_block :
             [hash_id, testcase, tool, truth, bugclass, return code, return output, tool classified as X]
     '''
+    # Run the ASAN compiled test case
+    # Passing in the ASAN_OPTIONS=detect_leaks=0 environment variable.
+    testcase_block = arg
+    hash_id = testcase_block[0]
+    testcase = testcase_block[1]
+    tool = testcase_block[2]
+    truth = testcase_block[3]
+    bugclass = testcase_block[4]
+
+    # Enable ASAN
+    env = os.environ.copy()
+    env["ASAN_OPTIONS"] = "detect_leaks=0"
+
+    file_to_exec = "{}".format(testcase)
+    # print("Executing : {}".format(file_to_exec))
+    output = ''
+    try:
+        output = subprocess.check_output(file_to_exec,
+                                         env=env,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True,
+                                         timeout=5)
+    except subprocess.CalledProcessError as cpe:
+        # pp.pprint("QTE returned code : {}".format(cpe.returncode))
+        # pp.pprint("QTE : {}".format(cpe.output))
+        # return (cpe.returncode, cpe.output)
+        testcase_block.append(cpe.returncode)
+        testcase_block.append(cpe.output)
+        testcase_block.append("bad")
+        return testcase_block
+
+    except subprocess.TimeoutExpired as te:
+        pp.pprint("QTE timed out on testcase :{}".format(file_to_exec))
+        testcase_block.append(1)
+        testcase_block.append(output)
+        testcase_block.append("timedout")
+        return testcase_block
+
+    # otherwise successful run.
+    testcase_block.append(0)
+    testcase_block.append(output)
+    testcase_block.append("good")
+    # return (0, output)
+    return testcase_block
 
 
 # this regex matches on:
