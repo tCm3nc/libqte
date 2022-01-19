@@ -50,8 +50,6 @@ def setup_db():
 def add_to_database(result):
     print("Adding result to DB..")
     # print("{}".format(result))
-    # FIXME: I need to format the output into ASCII. Currently it is encoded in the
-    # database, so its not immediately readable.
     sql_query = 'INSERT INTO EXPERIMENT ' + \
     '(id, filename, tool, truth, class, ret_code, ret_output, ret_status)' + \
     ' values(?, ?, ?, ?, ?, ?, ?, ?)'
@@ -133,20 +131,29 @@ def run_qte(arg):
         # pp.pprint("QTE : {}".format(cpe.output))
         # return (cpe.returncode, cpe.output)
         testcase_block.append(cpe.returncode)
-        testcase_block.append(cpe.output)
+        if (type(output) == str):
+            testcase_block.append(cpe.output)
+        else:
+            testcase_block.append(cpe.output.decode('utf-8'))
         testcase_block.append("bad")
         return testcase_block
 
     except subprocess.TimeoutExpired as te:
         # pp.pprint("QTE timed out on testcase :{}".format(file_to_exec))
         testcase_block.append(1)
-        testcase_block.append(output)
+        if (type(output) == str):
+            testcase_block.append(output)
+        else:
+            testcase_block.append(output.decode('utf-8'))
         testcase_block.append("timedout")
         return testcase_block
 
     # otherwise successful run.
     testcase_block.append(0)
-    testcase_block.append(output)
+    if (type(output) == str):
+        testcase_block.append(output)
+    else:
+        testcase_block.append(output.decode('utf-8'))
     testcase_block.append("good")
     # return (0, output)
     return testcase_block
@@ -187,19 +194,28 @@ def run_qasan(arg):
                                          timeout=5)
     except subprocess.CalledProcessError as cpe:
         testcase_block.append(cpe.returncode)
-        testcase_block.append(cpe.output)
+        if (type(output) == str):
+            testcase_block.append(cpe.output)
+        else:
+            testcase_block.append(cpe.output.decode('utf-8'))
         testcase_block.append("bad")
         return testcase_block
 
     except subprocess.TimeoutExpired as te:
         testcase_block.append(1)
-        testcase_block.append(output)
+        if (type(output) == str):
+            testcase_block.append(output)
+        else:
+            testcase_block.append(output.decode('utf-8'))
         testcase_block.append("timedout")
         return testcase_block
 
     # otherwise successful run.
     testcase_block.append(0)
-    testcase_block.append(output)
+    if (type(output) == str):
+        testcase_block.append(output)
+    else:
+        testcase_block.append(output.decode('utf-8'))
     testcase_block.append("good")
     return testcase_block
 
@@ -241,20 +257,29 @@ def run_asan(arg):
         # pp.pprint("QTE : {}".format(cpe.output))
         # return (cpe.returncode, cpe.output)
         testcase_block.append(cpe.returncode)
-        testcase_block.append(cpe.output)
+        if (type(output) == str):
+            testcase_block.append(cpe.output)
+        else:
+            testcase_block.append(cpe.output.decode('utf-8'))
         testcase_block.append("bad")
         return testcase_block
 
     except subprocess.TimeoutExpired as te:
         pp.pprint("ASAN timed out on testcase :{}".format(file_to_exec))
         testcase_block.append(1)
-        testcase_block.append(output)
+        if (type(output) == str):
+            testcase_block.append(output)
+        else:
+            testcase_block.append(output.decode('utf-8'))
         testcase_block.append("timedout")
         return testcase_block
 
     # otherwise successful run.
     testcase_block.append(0)
-    testcase_block.append(output)
+    if (type(output) == str):
+        testcase_block.append(output)
+    else:
+        testcase_block.append(output.decode('utf-8'))
     testcase_block.append("good")
     # return (0, output)
     return testcase_block
