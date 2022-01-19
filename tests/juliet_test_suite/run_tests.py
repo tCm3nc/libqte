@@ -134,7 +134,12 @@ def run_qte(arg):
         if (type(output) == str):
             testcase_block.append(cpe.output)
         else:
-            testcase_block.append(cpe.output.decode('utf-8'))
+            try:
+                testcase_block.append(cpe.output.decode('utf-8'))
+            except UnicodeDecodeError as e:
+                print(
+                    "Unicode decoding error occured. Going to input as binary.")
+                testcase_block.append(cpe.output)
         testcase_block.append("bad")
         return testcase_block
 
@@ -144,7 +149,12 @@ def run_qte(arg):
         if (type(output) == str):
             testcase_block.append(output)
         else:
-            testcase_block.append(output.decode('utf-8'))
+            try:
+                testcase_block.append(output.decode('utf-8'))
+            except UnicodeDecodeError as e:
+                print(
+                    "Unicode decoding error occured. Going to input as binary.")
+                testcase_block.append(output)
         testcase_block.append("timedout")
         return testcase_block
 
@@ -153,7 +163,11 @@ def run_qte(arg):
     if (type(output) == str):
         testcase_block.append(output)
     else:
-        testcase_block.append(output.decode('utf-8'))
+        try:
+            testcase_block.append(output.decode('utf-8'))
+        except UnicodeDecodeError as e:
+            print("Unicode decoding error occured. Going to input as binary.")
+            testcase_block.append(output)
     testcase_block.append("good")
     # return (0, output)
     return testcase_block
@@ -197,7 +211,12 @@ def run_qasan(arg):
         if (type(output) == str):
             testcase_block.append(cpe.output)
         else:
-            testcase_block.append(cpe.output.decode('utf-8'))
+            try:
+                testcase_block.append(cpe.output.decode('utf-8'))
+            except UnicodeDecodeError as e:
+                print(
+                    "Unicode decoding error occured. Going to input as binary.")
+                testcase_block.append(cpe.output)
         testcase_block.append("bad")
         return testcase_block
 
@@ -206,7 +225,12 @@ def run_qasan(arg):
         if (type(output) == str):
             testcase_block.append(output)
         else:
-            testcase_block.append(output.decode('utf-8'))
+            try:
+                testcase_block.append(output.decode('utf-8'))
+            except UnicodeDecodeError as e:
+                print(
+                    "Unicode decoding error occured. Going to input as binary.")
+                testcase_block.append(output)
         testcase_block.append("timedout")
         return testcase_block
 
@@ -215,7 +239,11 @@ def run_qasan(arg):
     if (type(output) == str):
         testcase_block.append(output)
     else:
-        testcase_block.append(output.decode('utf-8'))
+        try:
+            testcase_block.append(output.decode('utf-8'))
+        except UnicodeDecodeError as e:
+            print("Unicode decoding error occured. Going to input as binary.")
+            testcase_block.append(output)
     testcase_block.append("good")
     return testcase_block
 
