@@ -50,6 +50,8 @@ def setup_db():
 def add_to_database(result):
     print("Adding result to DB..")
     # print("{}".format(result))
+    # FIXME: I need to format the output into ASCII. Currently it is encoded in the
+    # database, so its not immediately readable.
     sql_query = 'INSERT INTO EXPERIMENT ' + \
     '(id, filename, tool, truth, class, ret_code, ret_output, ret_status)' + \
     ' values(?, ?, ?, ?, ?, ?, ?, ?)'
