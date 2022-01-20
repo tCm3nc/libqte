@@ -45,181 +45,175 @@ def query_total_count_testcases(tool, category, known_status):
     return cursor
 
 
-def query_true_positives(tool, category, known_status, ret_status):
-    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
-        tool, category, known_status, ret_status)
+def query_true_positives(tool, category):
+    # TP - When the testcase is good, and the output is also classified as good
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == 'good' and (ret_status != 'timedout') and (ret_status == 'good')".format(
+        tool, category)
     cursor = execute_query(args.database, query)
     return cursor
 
 
-def query_true_negatives(tool, category, known_status, ret_status):
-    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
-        tool, category, known_status, ret_status)
+def query_true_negatives(tool, category):
+    # TN - When the testcase is bad, and the output is also classified as bad
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == 'bad' and (ret_status != 'timedout') and (ret_status == 'bad')".format(
+        tool, category)
     cursor = execute_query(args.database, query)
     return cursor
 
 
-def query_false_positives(tool, category, known_status, ret_status):
-    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
-        tool, category, known_status, ret_status)
+def query_false_positives(tool, category):
+    # FP - When the testcase is bad, and the output is classified as good
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == 'bad' and (ret_status != 'timedout') and (ret_status == 'good')".format(
+        tool, category)
     cursor = execute_query(args.database, query)
     return cursor
 
 
-def query_false_negatives(tool, category, known_status, ret_status):
-    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
-        tool, category, known_status, ret_status)
+def query_false_negatives(tool, category):
+    # FN - When the testcase is good, but the output is classified as bad.
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == 'good' and (ret_status != 'timedout') and (ret_status == 'bad')".format(
+        tool, category)
     cursor = execute_query(args.database, query)
     return cursor
+
+
+def print_stats(tool, category):
+    total_good_tests = query_total_count_testcases(tool, category, 'good')
+
+    tp_tests = query_true_positives(tool, category)
+    tn_tests = query_true_negatives(tool, category)
+    fp_tests = query_false_positives(tool, category)
+    fn_tests = query_false_negatives(tool, category)
+
+    print("-" * 80)
+    for row in total_good_tests:
+        print("{} : Total : {}".format(tool, row[0]))
+    for row in tp_tests:
+        print("{} : TP : {}".format(tool, row[0]))
+    for row in tn_tests:
+        print("{} : TN : {}".format(tool, row[0]))
+    for row in fp_tests:
+        print("{} : FP : {}".format(tool, row[0]))
+    for row in fn_tests:
+        print("{} : FN : {}".format(tool, row[0]))
+    print("-" * 80)
 
 
 def process_cwe121(args):
     print("Processing data for : {}".format(CWE121))
-    # For each test case we need to process the following:
-    # Total number of test cases
-
-    # How many test cases for ASAN?
     tool = 'asan'
     category = CWE121
-    total_good_tests = query_total_count_testcases(tool, category, 'good')
-    total_bad_tests = query_total_count_testcases(tool, category, 'bad')
+    print_stats(tool, category)
 
-    tp_good_tests = query_true_positives(tool, category, 'good', 'good')
-    tp_bad_tests = query_true_positives(tool, category, 'bad', 'bad')
+    tool = 'qasan'
+    print_stats(tool, category)
 
-    tn_good_tests = query_true_negatives(tool, category, 'good', 'good')
-    tn_bad_tests = query_true_negatives(tool, category, 'bad', 'bad')
-
-    fn_good_tests = query_false_negatives(tool, category, 'good', 'bad')
-    fn_bad_tests = query_false_negatives(tool, category, 'bad', 'good')
-
-    fp_good_tests = query_false_positives(tool, category, 'good', 'bad')
-    fp_bad_tests = query_false_positives(tool, category, 'bad', 'good')
-
-    for row in total_good_tests:
-        print("{} : Good : Total : {}".format(tool, row[0]))
-    for row in tp_good_tests:
-        print("{} : Good : TP : {}".format(tool, row[0]))
-    for row in tn_good_tests:
-        print("{} : Good : TN : {}".format(tool, row[0]))
-    for row in fp_good_tests:
-        print("{} : Good : FP : {}".format(tool, row[0]))
-    for row in fn_good_tests:
-        print("{} : Good : FN : {}".format(tool, row[0]))
-
-    for row in total_bad_tests:
-        print("{} : Bad : Total : {}".format(tool, row[0]))
-    for row in tp_bad_tests:
-        print("{} : Bad : TP : {}".format(tool, row[0]))
-    for row in tn_bad_tests:
-        print("{} : Bad : TN : {}".format(tool, row[0]))
-    for row in fp_bad_tests:
-        print("{} : Bad : FP : {}".format(tool, row[0]))
-    for row in fn_bad_tests:
-        print("{} : Bad : FN : {}".format(tool, row[0]))
-
+    tool = 'qte'
+    print_stats(tool, category)
     return
 
 
 def process_cwe122(args):
     print("Processing data for : {}".format(CWE122))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE122, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE122, 'bad')
+    category = CWE122
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
 
+    tool = 'qte'
+    print_stats(tool, category)
     return
 
 
 def process_cwe124(args):
     print("Processing data for : {}".format(CWE124))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE124, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE124, 'bad')
+    category = CWE124
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
 
     return
 
 
 def process_cwe126(args):
     print("Processing data for : {}".format(CWE126))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE126, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE126, 'bad')
+    category = CWE126
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
 
     return
 
 
 def process_cwe127(args):
     print("Processing data for : {}".format(CWE127))
-
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE127, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE127, 'bad')
+    category = CWE127
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
+
     return
 
 
 def process_cwe415(args):
     print("Processing data for : {}".format(CWE415))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE415, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE415, 'bad')
+    category = CWE415
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
+
     return
 
 
 def process_cwe416(args):
     print("Processing data for : {}".format(CWE416))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE416, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE416, 'bad')
+    category = CWE416
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
+
     return
 
 
 def process_cwe590(args):
     print("Processing data for : {}".format(CWE590))
-    # How many test cases for ASAN? and good?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE590, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE590, 'bad')
+    category = CWE590
+    print_stats(tool, category)
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tool = 'qasan'
+    print_stats(tool, category)
+
+    tool = 'qte'
+    print_stats(tool, category)
+
     return
 
 
