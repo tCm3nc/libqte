@@ -117,14 +117,13 @@ def run_qte(arg):
     env = os.environ.copy()
     env["AFL_USE_QTE"] = "1"
 
-    file_to_exec = "{} {}".format(qte_binary, testcase)
+    file_to_exec = [qte_binary, testcase]
     # print("Executing : {}".format(file_to_exec))
     output = ''
     try:
         output = subprocess.check_output(file_to_exec,
                                          env=env,
                                          stderr=subprocess.STDOUT,
-                                         shell=True,
                                          timeout=5)
     except subprocess.CalledProcessError as cpe:
         # pp.pprint("QTE returned code : {}".format(cpe.returncode))
@@ -197,14 +196,13 @@ def run_qasan(arg):
     env = os.environ.copy()
     env["AFL_USE_QASAN"] = "1"
 
-    file_to_exec = "{} {}".format(qasan_binary, testcase)
+    file_to_exec = [qasan_binary, testcase]
     #print("Executing : {}".format(file_to_exec))
     output = ''
     try:
         output = subprocess.check_output(file_to_exec,
                                          env=env,
                                          stderr=subprocess.STDOUT,
-                                         shell=True,
                                          timeout=5)
     except subprocess.CalledProcessError as cpe:
         testcase_block.append(cpe.returncode)
@@ -271,14 +269,14 @@ def run_asan(arg):
     env = os.environ.copy()
     env["ASAN_OPTIONS"] = "detect_leaks=0"
 
-    file_to_exec = "{}".format(testcase)
+    # file_to_exec = "{}".format(testcase)
+    file_to_exec = [os.path.normpath(testcase)]
     # print("Executing : {}".format(file_to_exec))
     output = ''
     try:
         output = subprocess.check_output(file_to_exec,
                                          env=env,
                                          stderr=subprocess.STDOUT,
-                                         shell=True,
                                          timeout=5)
     except subprocess.CalledProcessError as cpe:
         # pp.pprint("QTE returned code : {}".format(cpe.returncode))
@@ -435,10 +433,10 @@ if __name__ == '__main__':
         setup_db()
 
     # Update the globals with the path and library information.
-    qte_path = args.qte_binary
-    qte_lib_path = args.qte_library
-    qasan_path = args.qasan_binary
-    qasan_lib_path = args.qasan_library
+    qte_path = os.getcwd() + "/" + args.qte_binary
+    qte_lib_path = os.getcwd() + "/" + args.qte_library
+    qasan_path = os.getcwd() + "/" + args.qasan_binary
+    qasan_lib_path = os.getcwd() + "/" + args.qasan_library
     testsuite_choice = args.testsuite
 
     run_tests()
