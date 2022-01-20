@@ -41,7 +41,7 @@ def do_main():
     # through our modified qemu-user
     env['AFL_USE_QTE'] = '1'
 
-    argv = [os.path.join(current_dir, "qte-qemu"]
+    argv = [os.path.join(current_dir, "qte-qemu")]
     if ((args.strace)):
         argv.append('-strace')
     if ((args.debugger) and (args.debug_engine == 'gdb')):
