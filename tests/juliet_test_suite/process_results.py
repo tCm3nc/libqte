@@ -85,17 +85,27 @@ def print_stats(tool, category):
     fp_tests = query_false_positives(tool, category)
     fn_tests = query_false_negatives(tool, category)
 
+    total_tests = 0
     print("-" * 80)
     for row in total_good_tests:
-        print("{} : Total : {}".format(tool, row[0]))
+        total_tests = int(row[0])
+        print("{} : Total : {}".format(tool, total_tests))
     for row in tp_tests:
-        print("{} : TP : {}".format(tool, row[0]))
+        entry = row[0]
+        percent = (int(entry) / total_tests) * 100
+        print("{} : TP : {} | {:.2f}%".format(tool, entry, percent))
     for row in tn_tests:
-        print("{} : TN : {}".format(tool, row[0]))
+        entry = row[0]
+        percent = (int(entry) / total_tests) * 100
+        print("{} : TN : {} | {:.2f}%".format(tool, entry, percent))
     for row in fp_tests:
-        print("{} : FP : {}".format(tool, row[0]))
+        entry = row[0]
+        percent = (int(entry) / total_tests) * 100
+        print("{} : FP : {} | {:.2f}%".format(tool, entry, percent))
     for row in fn_tests:
-        print("{} : FN : {}".format(tool, row[0]))
+        entry = row[0]
+        percent = (int(entry) / total_tests) * 100
+        print("{} : FN : {} | {:.2f}%".format(tool, entry, percent))
     print("-" * 80)
 
 
