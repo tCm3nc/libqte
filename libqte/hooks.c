@@ -24,6 +24,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "include/libqte.h"
+// contains the definitions of QTE hypercalls.
+#include "qte.h"
+
 char* (*__lq_libc_fgets)(char*, int, FILE*);
 int (*__lq_libc_atoi)(const char*);
 long (*__lq_libc_atol)(const char*);
