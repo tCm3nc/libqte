@@ -29,15 +29,47 @@ def connect_db(db_name):
     return con
 
 
+def execute_query(db_name, query):
+    con = connect_db(db_name)
+    if (args.debug == 'yes'):
+        print("Executing query : {}".format(query))
+    with con:
+        cursor = con.execute(query)
+    return cursor
+
+
 def query_total_count_testcases(tool, category, known_status):
     query = "SELECT COUNT() FROM EXPERIMENT WHERE tool == '{}' and class == '{}' and truth  == '{}'  and (ret_status != 'timedout');".format(
         tool, category, known_status)
-    if (args.debug == 'yes'):
-        print("Executing query : {}".format(query))
-    con = connect_db(args.database)
-    with con:
-        cursor = con.execute(query)
+    cursor = execute_query(args.database, query)
+    return cursor
 
+
+def query_true_positives(tool, category, known_status, ret_status):
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
+        tool, category, known_status, ret_status)
+    cursor = execute_query(args.database, query)
+    return cursor
+
+
+def query_true_negatives(tool, category, known_status, ret_status):
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
+        tool, category, known_status, ret_status)
+    cursor = execute_query(args.database, query)
+    return cursor
+
+
+def query_false_positives(tool, category, known_status, ret_status):
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status == '{}')".format(
+        tool, category, known_status, ret_status)
+    cursor = execute_query(args.database, query)
+    return cursor
+
+
+def query_false_negatives(tool, category, known_status, ret_status):
+    query = "SELECT COUNT() FROM EXPERIMENT WHERE tool = '{}' and class == '{}' and truth == '{}' and (ret_status != 'timedout') and (ret_status != '{}')".format(
+        tool, category, known_status, ret_status)
+    cursor = execute_query(args.database, query)
     return cursor
 
 
@@ -46,15 +78,50 @@ def process_cwe121(args):
     # For each test case we need to process the following:
     # Total number of test cases
 
-    # How many test cases for ASAN? and good?
+    # How many test cases for ASAN?
     tool = 'asan'
-    good_tests_cursor = query_total_count_testcases(tool, CWE121, 'good')
-    bad_tests_cursor = query_total_count_testcases(tool, CWE121, 'bad')
+    category = CWE121
+    total_good_tests_cursor = query_total_count_testcases(
+        tool, category, 'good')
+    total_bad_tests_cursor = query_total_count_testcases(tool, category, 'bad')
 
-    for row in good_tests_cursor:
-        print("Total ASAN good cases : {}".format(row[0]))
-    for row in bad_tests_cursor:
-        print("Total ASAN bad cases : {}".format(row[0]))
+    tp_good_tests = query_true_positives(tool, category, 'good', 'good')
+    tp_bad_tests = query_true_positives(tool, category, 'bad', 'bad')
+
+    tn_good_tests = query_true_negatives(tool, category, 'good', 'good')
+    tn_bad_tests = query_true_negatives(tool, category, 'bad', 'bad')
+
+    fn_good_tests = query_false_negatives(tool, category, 'good', 'good')
+    fn_bad_tests = query_false_negatives(tool, category, 'bad', 'bad')
+
+    fp_good_tests = query_false_positives(tool, category, 'good', 'bad')
+    fp_bad_tests = query_false_positives(tool, category, 'bad', 'good')
+
+    for row in total_good_tests_cursor:
+        print("{} : Good: Total : {}".format(tool, row[0]))
+    for row in total_bad_tests_cursor:
+        print("{} : Bad : Total : {}".format(tool, row[0]))
+
+    for row in tp_good_tests:
+        print("{} : Good : TP : {}".format(tool, row[0]))
+    for row in tp_bad_tests:
+        print("{} : Bad : TP : {}".format(tool, row[0]))
+
+    for row in tn_good_tests:
+        print("{} : Good : TN : {}".format(tool, row[0]))
+    for row in tn_bad_tests:
+        print("{} : Bad : TN : {}".format(tool, row[0]))
+
+    for row in fn_good_tests:
+        print("{} : Good : FN : {}".format(tool, row[0]))
+    for row in fn_bad_tests:
+        print("{} : Bad : FN : {}".format(tool, row[0]))
+
+    for row in fp_good_tests:
+        print("{} : Good : FP : {}".format(tool, row[0]))
+    for row in fp_bad_tests:
+        print("{} : Bad : FP : {}".format(tool, row[0]))
+
     return
 
 
@@ -202,7 +269,7 @@ if __name__ == '__main__':
                         ],
                         help="The category of CWE weakness to process",
                         default=None)
-    parser.add_argument("known_status", choices=['good', 'bad'])
+
     parser.add_argument(
         "--database",
         type=str,
