@@ -111,42 +111,42 @@ def print_stats(tool, category):
 
 def process_cwe121(args):
     print("Processing data for : {}".format(CWE121))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE121
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
     return
 
 
 def process_cwe122(args):
     print("Processing data for : {}".format(CWE122))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE122
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
     return
 
 
 def process_cwe124(args):
     print("Processing data for : {}".format(CWE124))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE124
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
@@ -154,14 +154,14 @@ def process_cwe124(args):
 
 def process_cwe126(args):
     print("Processing data for : {}".format(CWE126))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE126
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
@@ -169,14 +169,14 @@ def process_cwe126(args):
 
 def process_cwe127(args):
     print("Processing data for : {}".format(CWE127))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE127
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
@@ -184,14 +184,14 @@ def process_cwe127(args):
 
 def process_cwe415(args):
     print("Processing data for : {}".format(CWE415))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE415
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
@@ -199,14 +199,14 @@ def process_cwe415(args):
 
 def process_cwe416(args):
     print("Processing data for : {}".format(CWE416))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE416
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
@@ -214,14 +214,14 @@ def process_cwe416(args):
 
 def process_cwe590(args):
     print("Processing data for : {}".format(CWE590))
-    tool = 'asan'
+    tool = 'qte'
     category = CWE590
     print_stats(tool, category)
 
     tool = 'qasan'
     print_stats(tool, category)
 
-    tool = 'qte'
+    tool = 'asan'
     print_stats(tool, category)
 
     return
