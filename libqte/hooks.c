@@ -99,7 +99,10 @@ void* pvalloc(size_t size) {
 }
 
 char* fgets(char* s, int size, FILE* stream) {
-  // FIXME: Do checking to ensure this is valid!
+  s = (char*)QTE_STORE(s, size);
+#ifndef __ANDROID__
+  stream = (FILE*)QTE_LOAD(stream, sizeof(FILE));
+#endif
   void* p = __lq_libc_fgets(s, size, stream);
   LOG("%p = fgets(%p, %d, %p)", p, s, size, stream);
   return p;
