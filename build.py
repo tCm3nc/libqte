@@ -86,6 +86,11 @@ def do_main():
         if (args.debug):
             extra_cflags += "{}".format("-DDEBUG")
 
+        # Add support for the qte.h header which includes the definitions of
+        # QTE_ALLOC etc.
+        extra_cflags += "' -I{} '".format(
+            os.path.normpath(os.getcwd() + "/include/"))
+
         cmd = 'cd {}; make {} {}'.format(os.path.join(current_dir, "libqte"),
                                          target, extra_cflags)
         print(cmd)

@@ -24,6 +24,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "include/libqte.h"
+// contains the definitions of QTE hypercalls.
+#include <stddef.h>
+#include "qte.h"
+
 char* (*__lq_libc_fgets)(char*, int, FILE*);
 int (*__lq_libc_atoi)(const char*);
 long (*__lq_libc_atol)(const char*);
@@ -96,62 +100,68 @@ void* pvalloc(size_t size) {
 }
 
 char* fgets(char* s, int size, FILE* stream) {
-  // FIXME: Do checking to ensure this is valid!
+  s = (char*)QTE_STORE(s, size);
+#ifndef __ANDROID__
+  stream = (FILE*)QTE_LOAD(stream, sizeof(FILE));
+#endif
   void* p = __lq_libc_fgets(s, size, stream);
   LOG("%p = fgets(%p, %d, %p)", p, s, size, stream);
   return p;
 }
 
 int memcmp(const void* s1, const void* s2, size_t n) {
-  // FIXME: do checking to ensure this is valid!
+  s1 = (void*)QTE_LOAD((void*)s1, n);
+  s1 = (void*)QTE_LOAD((void*)s2, n);
   int cmp = __libqte_memcmp(s1, s2, n);
   LOG("%d = memcmp(%p, %p, %zu)", cmp, s1, s2, n);
   return cmp;
 }
 
 void* memcpy(void* dest, const void* src, size_t n) {
-  // FIXME: do checking to ensure this is valid!
   LOG("memcpy(%p, %p, %zu)", dest, src, n);
+  src = (void*)QTE_LOAD((void*)src, n);
+  dest = (void*)QTE_STORE((void*)dest, n);
   void* p = __libqte_memcpy(dest, src, n);
   LOG("%p = memcpy(%p, %p, %zu)", p, dest, src, n);
   return p;
 }
 
 void* mempcpy(void* dest, const void* src, size_t n) {
-  // FIXME: do checking to ensure this is valid!
+  src = (void*)QTE_LOAD((void*)src, n);
+  dest = (void*)QTE_STORE((void*)dest, n);
   void* p = (uint8_t*)__libqte_memcpy(dest, src, n) + n;
   LOG("%p = mempcpy(%p, %p, %zu)", p, dest, src, n);
   return p;
 }
 
 void* memmove(void* dest, const void* src, size_t n) {
-  // FIXME: do checking
+  src = (void*)QTE_LOAD((void*)src, n);
+  dest = (void*)QTE_STORE((void*)dest, n);
   void* p = __libqte_memmove(dest, src, n);
   LOG("%p = memmove(%p, %p, %zu)", p, dest, src, n);
   return p;
 }
 
 void* memset(void* s, int c, size_t n) {
-  // FIXME: do checking
+  s = (void*)QTE_STORE((void*)s, n);
   void* r = __libqte_memset(s, c, n);
   LOG("%p = memset(%p, %d, %zu)", r, s, c, n);
   return r;
 }
 
 void* memchr(const void* s, int c, size_t n) {
-  // FIXME: do checking
   void* p = __libqte_memchr(s, c, n);
   if (p == NULL) {
-    // FIXME: do checking
+    s = (void*)QTE_LOAD((void*)s, n);
   } else {
-    // FIXME: do checking
+    s = (void*)QTE_LOAD((void*)s, p - s);
   }
   LOG("%p = memchr(%p, %d, %zu)", p, s, c, n);
   return p;
 }
 
 void* memrchr(const void* s, int c, size_t n) {
-  // FIXME: do checking!
+  s = (void*)QTE_LOAD((void*)s, n);
   void* p = __libqte_memrchr(s, c, n);
   LOG("%p = memrchr(%p, %d, %zu)", p, s, c, n);
   return p;
@@ -161,7 +171,8 @@ void* memmem(const void* haystack,
              size_t haystacklen,
              const void* needle,
              size_t needlelen) {
-  // FIXME: do checking!
+  haystack = (void*)QTE_LOAD((void*)haystack, haystacklen);
+  needle = (void*)QTE_LOAD((void*)needle, needlelen);
   void* p = __libqte_memmem(haystack, haystacklen, needle, needlelen);
   LOG("%p = memmem(%p, %zu, %p, %zu)", p, haystack, haystacklen, needle,
       needlelen);
@@ -170,58 +181,66 @@ void* memmem(const void* haystack,
 
 #ifndef __BIONIC__
 void bzero(void* s, size_t n) {
-  // FIXME: do checking!
+  s = (void*)(void*)QTE_STORE((void*)s, n);
   __libqte_memset(s, 0, n);
 }
 #endif
 
 void explicit_bzero(void* s, size_t n) {
-  // FIXME: do checking!
+  s = (void*)QTE_STORE((void*)s, n);
   LOG("explicit_bzero(%p, %zu)", s, n);
   __libqte_memset(s, 0, n);
 }
 
 int bcmp(const void* s1, const void* s2, size_t n) {
-  // FIXME: do checking!
+  s1 = (void*)QTE_LOAD((void*)s1, n);
+  s2 = (void*)QTE_LOAD((void*)s2, n);
   int r = __libqte_bcmp(s1, s2, n);
   LOG("%d = bcmp(%p, %p, %zu)", r, s1, s2, n);
   return r;
 }
 
 char* strchr(const char* s, int c) {
-  // FIXME: do checking!
-  // size_t l = __libqte_strlen(s);
+  size_t l = __libqte_strlen(s);
+  s = (char*)QTE_LOAD((void*)s, l + 1);
   void* p = __libqte_strchr(s, c);
   LOG("%p = strchr(%p, %d)", p, s, c);
   return p;
 }
 
 char* strrchr(const char* s, int c) {
-  // FIXME: do checking!
-  // size_t l = __libqte_strlen(s);
+  size_t l = __libqte_strlen(s);
+  s = (char*)QTE_LOAD((void*)s, l + 1);
   void* p = __libqte_strrchr(s, c);
   LOG("%p strrchr(%p, %d)", p, s, c);
   return p;
 }
 
 int strcasecmp(const char* s1, const char* s2) {
-  // FIXME: do checking!
+  size_t l1 = __libqte_strlen(s1);
+  s1 = (char*)QTE_LOAD((void*)s1, l1 + 1);
+  size_t l2 = __libqte_strlen(s2);
+  s2 = (char*)QTE_LOAD((void*)s2, l2 + 1);
   int r = __libqte_strcasecmp(s1, s2);
   LOG("%d = strcasecmp(%p, %p)", r, s1, s2);
   return r;
 }
 
 int strncasecmp(const char* s1, const char* s2, size_t n) {
-  // FIXME: do checking!
+  size_t l1 = __libqte_strlen(s1);
+  s1 = (char*)QTE_LOAD((void*)s1, l1 + 1);
+  size_t l2 = __libqte_strlen(s2);
+  s2 = (char*)QTE_LOAD((void*)s2, l2 + 1);
   int r = __libqte_strncasecmp(s1, s2, n);
   LOG("%d = strncasecmp(%p, %p, %zu)", r, s1, s2, n);
   return r;
 }
 
 char* strcat(char* dest, const char* src) {
-  // FIXME: do checking!
-  size_t l2 = __libqte_strlen(src);
-  size_t l1 = __libqte_strlen(dest);
+  size_t l1 = __libqte_strlen(src);
+  src = (char*)QTE_LOAD((void*)src, l1 + 1);
+  size_t l2 = __libqte_strlen(dest);
+  dest = (char*)QTE_LOAD((void*)dest, l2 + 1);
   __libqte_memcpy(dest + l1, src, l2);
   dest[l1 + l2] = 0;
   void* p = dest;
@@ -230,36 +249,42 @@ char* strcat(char* dest, const char* src) {
 }
 
 int strcmp(const char* s1, const char* s2) {
-  // FIXME: do checking!
+  size_t l1 = __libqte_strlen(s1);
+  s1 = (char*)QTE_LOAD((void*)s1, l1 + 1);
+  size_t l2 = __libqte_strlen(s2);
+  s2 = (char*)QTE_LOAD((void*)s2, l2 + 1);
   int r = __libqte_strcmp(s1, s2);
   LOG("%d = strcmp(%p, %p)", r, s1, s2);
   return r;
 }
 
 int strncmp(const char* s1, const char* s2, size_t n) {
-  // FIXME: do checking!
-  // size_t l1 = __libqte_strnlen(s1, n);
-  // size_t l2 = __libqte_strnlen(s2, n);
+  size_t l1 = __libqte_strnlen(s1, n);
+  s1 = (char*)QTE_LOAD((void*)s1, l1);
+  size_t l2 = __libqte_strnlen(s2, n);
+  s2 = (char*)QTE_LOAD((void*)s2, l2);
   int r = __libqte_strncmp(s1, s2, n);
   LOG("%d = strncmp(%p, %p, %zu)", r, s1, s2, n);
   return r;
 }
 
 char* strcpy(char* dest, const char* src) {
-  // FIXME: do checking!
   size_t l = __libqte_strlen(src) + 1;
+  src = (char*)QTE_LOAD((void*)src, l);
+  dest = (char*)QTE_STORE((void*)dest, l);
   void* p = __libqte_memcpy(dest, src, l);
   LOG("%p = strcpy(%p, %p)", p, dest, src);
   return p;
 }
 
 char* strncpy(char* dest, const char* src, size_t n) {
-  // FIXME: do checking!
   size_t l = __libqte_strnlen(src, n);
   void* p = NULL;
   if (l < n) {
+    src = (char*)QTE_LOAD((void*)src, l + 1);
     p = __libqte_memcpy(dest, src, l + 1);
   } else {
+    src = (char*)QTE_LOAD((void*)src, n);
     p = __libqte_memcpy(dest, src, n);
   }
   LOG("%p = strncpy(%p, %p, %zu)", p, dest, src, n);
@@ -267,96 +292,103 @@ char* strncpy(char* dest, const char* src, size_t n) {
 }
 
 char* stpcpy(char* dest, const char* src) {
-  // FIXME: do checking!
   size_t l = __libqte_strlen(src) + 1;
+  src = (char*)QTE_LOAD((void*)src, l);
+  dest = (char*)QTE_STORE((void*)dest, l);
   char* p = __libqte_memcpy(dest, src, l) + (l - 1);
   LOG("%p = stpcpy(%p, %p)", p, dest, src);
   return p;
 }
 
 char* strdup(const char* s) {
-  // FIXME: do checking!
   size_t l = __libqte_strlen(s);
   void* p = __libqte_malloc(l + 1);
+  s = (char*)QTE_LOAD((void*)s, l + 1);
   __libqte_memcpy(p, s, l + 1);
   LOG("%p = strdup(%p)", p, s);
   return p;
 }
 
 size_t strlen(const char* s) {
-  // FIXME: do checking!
   size_t l = __libqte_strlen(s);
+  s = (char*)QTE_LOAD((void*)s, l + 1);
   LOG("%zu = strlen(%p)", l, s);
   return l;
 }
 
 size_t strnlen(const char* s, size_t n) {
-  // FIXME: do checking!
   size_t l = __libqte_strnlen(s, n);
+  s = (char*)QTE_LOAD((void*)s, n);
   LOG("%zu = strnlen(%p, %zu)", l, s, n);
   return l;
 }
 
 char* strstr(const char* haystack, const char* needle) {
-  // FIXME: do checking!
-  // size_t l = __libqte_strlen(haystack) + 1;
-  // l = __libqte_strlen(needle) + 1;
+  size_t l = __libqte_strlen(haystack) + 1;
+  haystack = (char*)QTE_LOAD((void*)haystack, l);
+  l = __libqte_strlen(needle) + 1;
+  needle = (char*)QTE_LOAD((void*)needle, l);
   void* p = __libqte_strstr(haystack, needle);
   LOG("%p = strstr(%p, %p)", p, haystack, needle);
   return p;
 }
 
 char* strcasestr(const char* haystack, const char* needle) {
-  // FIXME: do checking!
+  size_t l = __libqte_strlen(haystack) + 1;
+  haystack = (char*)QTE_LOAD((void*)haystack, l);
+  l = __libqte_strlen(needle) + 1;
+  needle = (char*)QTE_LOAD((void*)needle, l);
   void* p = __libqte_strcasestr(haystack, needle);
   LOG("%p = strcasestr(%p, %p)", p, haystack, needle);
   return p;
 }
 
 int atoi(const char* nptr) {
-  // FIXME: do checking!
+  size_t l = __libqte_strlen(nptr) + 1;
+  nptr = (char*)QTE_LOAD((void*)nptr, l);
   int r = __lq_libc_atoi(nptr);
   LOG("%d = atoi(%p)", r, nptr);
   return r;
 }
 
 long atol(const char* nptr) {
-  // FIXME: do checking!
+  size_t l = __libqte_strlen(nptr) + 1;
+  nptr = (char*)QTE_LOAD((void*)nptr, l);
   long r = __lq_libc_atol(nptr);
   LOG("%ld = atol(%p)", r, nptr);
   return r;
 }
 
 long long atoll(const char* nptr) {
-  // FIXME: do checking!
+  size_t l = __libqte_strlen(nptr) + 1;
+  nptr = (char*)QTE_LOAD((void*)nptr, l);
   long long r = __lq_libc_atoll(nptr);
   LOG("%lld = atoll(%p)", r, nptr);
   return r;
 }
 
 size_t wcslen(const wchar_t* s) {
-  // FIXME: do checking!
   size_t r = __libqte_wcslen(s);
+  s = (wchar_t*)QTE_LOAD((void*)s, sizeof(wchar_t) * (r + 1));
   LOG("%zu = wcslen(%p)", r, (void*)s);
   return r;
 }
 
 wchar_t* wcscpy(wchar_t* dest, const wchar_t* src) {
-  // FIXME: do checking!
+  size_t l = __libqte_wcslen(src) + 1;
+  src = (wchar_t*)QTE_LOAD((void*)src, l * sizeof(wchar_t));
+  dest = (wchar_t*)QTE_STORE((void*)dest, l * sizeof(wchar_t));
   void* p = __libqte_wcscpy(dest, src);
   LOG("%p = wcscpy(%p, %p)", p, dest, src);
   return p;
 }
 
 int wcscmp(const wchar_t* s1, const wchar_t* s2) {
-  // FIXME: do checking!
+  size_t l1 = __libqte_wcslen(s1);
+  s1 = (wchar_t*)QTE_LOAD((void*)s1, sizeof(wchar_t) * (l1 + 1));
+  size_t l2 = __libqte_wcslen(s2);
+  s2 = (wchar_t*)QTE_LOAD((void*)s2, sizeof(wchar_t) * (l2 + 1));
   int r = __libqte_wcscmp(s1, s2);
   LOG("%d = wcscmp(%p, %p)", r, s1, s2);
   return r;
 }
-
-// TODO: still have fgets, memcmp, memcpy, mempcpy, memmove, memchr,
-// memrchr, memmem, bcmp, strchr, strrchr, strcasecmp,
-// strncasecmp, strcat, strcmp, strncmp, strcpy, strncpy, stpcpy, strdup,
-// strlen, strnlen, strstr, strcasestr, atoi, atol, atoll, wcslen, wcscpy,
-// wscscmp to implement.

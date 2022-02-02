@@ -39,11 +39,9 @@ def do_main():
 
     # LD_PRELOAD our interception library into the target program and run it
     # through our modified qemu-user
-    argv = [
-        os.path.join(current_dir, "qte-qemu"),
-        "-E",
-        "LD_PRELOAD={}".format(os.path.join(current_dir, "libqte.so")),
-    ]
+    env['AFL_USE_QTE'] = '1'
+
+    argv = [os.path.join(current_dir, "qte-qemu")]
     if ((args.strace)):
         argv.append('-strace')
     if ((args.debugger) and (args.debug_engine == 'gdb')):

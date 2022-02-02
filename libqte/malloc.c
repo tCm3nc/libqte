@@ -1,9 +1,9 @@
 #define _GNU_SOURCE
-#include <pthread.h>         // for pthread_spinlock_t
-#include <stdalign.h>        // for alignof
-#include <stddef.h>          // for max_align_t
-#include "../include/qte.h"  // for macros related to talking to the QTE qemu.
+#include <pthread.h>   // for pthread_spinlock_t
+#include <stdalign.h>  // for alignof
+#include <stddef.h>    // for max_align_t
 #include "include/libqte.h"
+#include "qte.h"  // for macros related to talking to the QTE qemu.
 
 // A collection of functions that manage the internal malloc hooks.
 

@@ -33,7 +33,7 @@
 
 #define QTE_FAKESYS_NR 0x1337
 #define QTE_GRANULE_SIZE 16
-#define BLOCK_ALLOCATION_ALIGN (1<<16)
+#define BLOCK_ALLOCATION_ALIGN (1 << 16)
 
 #define QTE_ENABLED (0)
 #define QTE_DISABLED (1)
@@ -44,6 +44,8 @@ enum action_t {
   QTE_ACTION_DEBUG,
   QTE_ACTION_SWAP_STATE,
   QTE_ACTION_UNTAG,
+  QTE_ACTION_CHECK_LOAD,
+  QTE_ACTION_CHECK_STORE,
 };
 
 // #define QTE_CALL0(action) syscall(QTE_FAKESYS_NR, action, NULL, NULL, NULL)
@@ -81,6 +83,19 @@ static inline void* QTE_UNTAG(void* ptr) {
   void* ptr_untagged = (void*)QTE_CALL1(QTE_ACTION_UNTAG, ptr);
   return ptr_untagged;
 }
+
+static inline void* QTE_LOAD(void* ptr, unsigned int len) {
+  void* ptr_untagged =
+      (void*)QTE_CALL2(QTE_ACTION_CHECK_LOAD, ptr, (void*)(long)len);
+  return ptr_untagged;
+}
+
+static inline void* QTE_STORE(void* ptr, unsigned int len) {
+  void* ptr_untagged =
+      (void*)QTE_CALL2(QTE_ACTION_CHECK_STORE, ptr, (void*)(long)len);
+  return ptr_untagged;
+}
+
 static inline void QTE_DEBUG() {
   QTE_CALL0(QTE_ACTION_DEBUG);
 }
