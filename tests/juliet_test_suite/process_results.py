@@ -86,26 +86,61 @@ def print_stats(tool, category):
     fn_tests = query_false_negatives(tool, category)
 
     total_tests = 0
+    tp = 0
+    fp = 0
+    tn = 0
+    fn = 0
     print("-" * 80)
     for row in total_good_tests:
-        total_tests = int(row[0])
+        total_tests = int(row[0]) * 2
         print("{} : Total : {}".format(tool, total_tests))
+    if (total_tests == 0):
+        print("No tests have been run for this tool {}".format(tool))
+        return
     for row in tp_tests:
         entry = row[0]
-        percent = (int(entry) / total_tests) * 100
+        tp = int(entry)
+        percent = (tp / total_tests) * 100
         print("{} : TP : {} | {:.2f}%".format(tool, entry, percent))
     for row in tn_tests:
         entry = row[0]
-        percent = (int(entry) / total_tests) * 100
+        tn = int(entry)
+        percent = (tn / total_tests) * 100
         print("{} : TN : {} | {:.2f}%".format(tool, entry, percent))
     for row in fp_tests:
         entry = row[0]
-        percent = (int(entry) / total_tests) * 100
+        fp = int(entry)
+        percent = (fp / total_tests) * 100
         print("{} : FP : {} | {:.2f}%".format(tool, entry, percent))
     for row in fn_tests:
         entry = row[0]
-        percent = (int(entry) / total_tests) * 100
+        fn = int(entry)
+        percent = (fn / total_tests) * 100
         print("{} : FN : {} | {:.2f}%".format(tool, entry, percent))
+
+    # positive predictive value - TP / (TP + FP)
+    # negative predicitive value - TN / (TN + FN)
+    sensitivity = (tp / (tp + fn))
+    specificity = (tn / (tn + fp))
+    prevalence = (tp + fn) / total_tests
+    ppv = tp / (tp + fp)
+    npv = tn / (tn + fn)
+    try:
+        odds_ratio = (tp * tn) / (tp * fn)
+    except ZeroDivisionError:
+        odds_ratio = 0
+        pass
+    try:
+        relative_risk = (ppv) / (npv)
+    except ZeroDivisionError:
+        relative_risk = 0
+        pass
+
+    print(
+        "Sensitivity : {:.2f}, Specificity : {:.2f}, Prevalence : {:.2f}, PPV : {:.2f}, NPV : {:.2f}, OR : {:.2f}, RR : {:.2f}"
+        .format(sensitivity, specificity, prevalence, ppv, npv, odds_ratio,
+                relative_risk))
+
     print("-" * 80)
 
 
